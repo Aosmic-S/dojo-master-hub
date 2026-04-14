@@ -4,7 +4,7 @@ import { ChevronRight, Award, Users, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
 import heroBg from "@/assets/hero-bg.jpg";
 
-const affiliations = ["WKF", "KIO", "SAKF", "IOC", "Commonwealth Games"];
+const affiliations = ["World Karate Fedration", "Karate India Fedration", "South Asian Karate Fedration", "International Olympic Committee", "Asian Karate Fedration", "Commonweath Karate Fedration"];
 
 const Index = () => (
   <Layout>
