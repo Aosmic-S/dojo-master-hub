@@ -1,18 +1,14 @@
 import Layout from "@/components/Layout";
 
 const batches = [
-  { batch: "Morning (Kids 5–10)", time: "6:00 AM – 7:30 AM", days: "Mon–Sat" },
-  { batch: "Morning (Juniors 10–16)", time: "7:30 AM – 9:00 AM", days: "Mon–Sat" },
-  { batch: "Evening (Kids 5–10)", time: "4:00 PM – 5:30 PM", days: "Mon–Sat" },
-  { batch: "Evening (Seniors 16+)", time: "5:30 PM – 7:00 PM", days: "Mon–Sat" },
-  { batch: "Competition Batch", time: "7:00 PM – 8:30 PM", days: "Mon–Fri" },
+  { batch: "Juniors ", time: "4:00 PM - 5:00 PM", days: "Mon - Fri ( Wed and Sat OFF)" },
+  { batch: "Seniors", time: "5:10 PM - 6:10 PM", days: "Mon - Fri  ( Wed and Sat OFF)" },
+
 ];
 
 const fees = [
-  { plan: "Monthly", price: "₹1,500", note: "" },
-  { plan: "Quarterly", price: "₹4,000", note: "Save ₹500" },
-  { plan: "Half-Yearly", price: "₹7,500", note: "Save ₹1,500" },
-  { plan: "Annual", price: "₹14,000", note: "Save ₹4,000" },
+  { plan: "Registration Fee", price: "100", note: "one time" },
+  { plan: "Monthly", price: "500", note: "" },
 ];
 
 const Timings = () => (
