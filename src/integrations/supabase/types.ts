@@ -14,16 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      achievements: {
+        Row: {
+          created_at: string
+          date: string | null
+          description: string | null
+          id: string
+          student_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          student_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          student_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_reports: {
+        Row: {
+          attendance: string
+          created_at: string
+          date: string
+          id: string
+          performance: string | null
+          remarks: string | null
+          sensei_id: string | null
+          skills_practiced: string | null
+          student_id: string
+        }
+        Insert: {
+          attendance?: string
+          created_at?: string
+          date?: string
+          id?: string
+          performance?: string | null
+          remarks?: string | null
+          sensei_id?: string | null
+          skills_practiced?: string | null
+          student_id: string
+        }
+        Update: {
+          attendance?: string
+          created_at?: string
+          date?: string
+          id?: string
+          performance?: string | null
+          remarks?: string | null
+          sensei_id?: string | null
+          skills_practiced?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_reports_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          belt_level: string
+          contact_number: string | null
+          created_at: string
+          date_of_birth: string | null
+          date_of_joining: string | null
+          father_name: string | null
+          full_name: string
+          id: string
+          profile_photo_url: string | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          belt_level?: string
+          contact_number?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          date_of_joining?: string | null
+          father_name?: string | null
+          full_name: string
+          id?: string
+          profile_photo_url?: string | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          belt_level?: string
+          contact_number?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          date_of_joining?: string | null
+          father_name?: string | null
+          full_name?: string
+          id?: string
+          profile_photo_url?: string | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_reports: {
+        Row: {
+          id: string
+          pushed_at: string
+          student_id: string
+          summary: string | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          id?: string
+          pushed_at?: string
+          student_id: string
+          summary?: string | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          id?: string
+          pushed_at?: string
+          student_id?: string
+          summary?: string | null
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_reports_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +332,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "student"],
+    },
   },
 } as const
