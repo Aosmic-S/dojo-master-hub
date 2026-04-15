@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      academy_achievements: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon_type: string | null
+          id: string
+          title: string
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon_type?: string | null
+          id?: string
+          title: string
+          year: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon_type?: string | null
+          id?: string
+          title?: string
+          year?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           created_at: string
@@ -48,6 +75,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      announcements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          target_batch: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          target_batch?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          target_batch?: string | null
+          title?: string
+        }
+        Relationships: []
       }
       daily_reports: {
         Row: {
@@ -93,6 +147,60 @@ export type Database = {
           },
         ]
       }
+      fees: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          note: string | null
+          plan_name: string
+          price: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          note?: string | null
+          plan_name: string
+          price: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          note?: string | null
+          plan_name?: string
+          price?: string
+        }
+        Relationships: []
+      }
+      gallery_photos: {
+        Row: {
+          alt_text: string | null
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+        }
+        Insert: {
+          alt_text?: string | null
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+        }
+        Update: {
+          alt_text?: string | null
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           belt_level: string
@@ -135,6 +243,33 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      timings: {
+        Row: {
+          batch_name: string
+          created_at: string
+          days: string
+          display_order: number | null
+          id: string
+          time_slot: string
+        }
+        Insert: {
+          batch_name: string
+          created_at?: string
+          days: string
+          display_order?: number | null
+          id?: string
+          time_slot: string
+        }
+        Update: {
+          batch_name?: string
+          created_at?: string
+          days?: string
+          display_order?: number | null
+          id?: string
+          time_slot?: string
         }
         Relationships: []
       }

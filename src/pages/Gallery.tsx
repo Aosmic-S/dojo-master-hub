@@ -1,22 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 
 const categories = ["All", "Tournaments", "Training", "Events", "Belts"];
 
-const images = [
-  { src: "https://images.unsplash.com/photo-1555597673-b21d5c935865?w=600", cat: "Training", alt: "Karate training" },
-  { src: "https://images.unsplash.com/photo-1564415315949-7a0c4c73acea?w=600", cat: "Tournaments", alt: "Tournament" },
-  { src: "https://images.unsplash.com/photo-1514050566906-8d077bae7046?w=600", cat: "Training", alt: "Kata practice" },
-  { src: "https://images.unsplash.com/photo-1517438476312-10d79c077509?w=600", cat: "Events", alt: "Belt ceremony" },
-  { src: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600", cat: "Training", alt: "Group training" },
-  { src: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600", cat: "Events", alt: "Academy event" },
-  { src: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600", cat: "Belts", alt: "Belt grading" },
-  { src: "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=600", cat: "Tournaments", alt: "Competition" },
-];
-
 const Gallery = () => {
+  const [photos, setPhotos] = useState<any[]>([]);
   const [filter, setFilter] = useState("All");
-  const filtered = filter === "All" ? images : images.filter((i) => i.cat === filter);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from("gallery_photos").select("*").order("display_order");
+      setPhotos(data || []);
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  const filtered = filter === "All" ? photos : photos.filter((p) => p.category === filter);
 
   return (
     <Layout>
@@ -31,30 +33,26 @@ const Gallery = () => {
 
           <div className="flex justify-center gap-2 mb-12 flex-wrap">
             {categories.map((c) => (
-              <button
-                key={c}
-                onClick={() => setFilter(c)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  filter === c ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-              >
+              <button key={c} onClick={() => setFilter(c)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === c ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
                 {c}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {filtered.map((img, i) => (
-              <div key={i} className="aspect-square overflow-hidden rounded-lg border border-border group">
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <p className="text-center text-muted-foreground">Loading...</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-center text-muted-foreground">No photos yet. Admin can upload from the dashboard.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filtered.map((img) => (
+                <div key={img.id} className="aspect-square overflow-hidden rounded-lg border border-border group">
+                  <img src={img.image_url} alt={img.alt_text || ""} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </Layout>
