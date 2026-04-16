@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings } from "lucide-react";
+import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 const BELT_LEVELS = [
@@ -28,6 +28,7 @@ const Dashboard = () => {
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [showDailyReport, setShowDailyReport] = useState<string | null>(null);
   const [showStudentDetail, setShowStudentDetail] = useState<any>(null);
+  const [showEditStudent, setShowEditStudent] = useState<any>(null);
   const [showAddAchievement, setShowAddAchievement] = useState<string | null>(null);
   const [showAddAcademyAchievement, setShowAddAcademyAchievement] = useState(false);
   const [showAddGallery, setShowAddGallery] = useState(false);
@@ -57,6 +58,12 @@ const Dashboard = () => {
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
 
+  // Edit student form
+  const [editForm, setEditForm] = useState({
+    full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "",
+    father_name: "", weight_kg: "", contact_number: ""
+  });
+
   const navigate = useNavigate();
 
   const loadData = useCallback(async () => {
@@ -77,13 +84,11 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) navigate("/login");
-      else setUser(session.user);
-    });
+    let mounted = true;
 
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!mounted) return;
       if (!session) { navigate("/login"); return; }
       setUser(session.user);
       setAdminEmail(session.user.email || "");
@@ -96,7 +101,14 @@ const Dashboard = () => {
       setLoading(false);
     };
     init();
-    return () => subscription.unsubscribe();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      if (!session) navigate("/login");
+      else setUser(session.user);
+    });
+
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, [navigate, loadData]);
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
@@ -104,7 +116,6 @@ const Dashboard = () => {
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke("create-student", {
         body: newStudent,
       });
@@ -284,6 +295,38 @@ const Dashboard = () => {
     else { toast.success("Promoted to admin!"); setShowPromoteStudent(null); }
   };
 
+  // Edit student profile
+  const openEditStudent = (student: any) => {
+    setEditForm({
+      full_name: student.full_name || "",
+      belt_level: student.belt_level || "White",
+      date_of_birth: student.date_of_birth || "",
+      date_of_joining: student.date_of_joining || "",
+      father_name: student.father_name || "",
+      weight_kg: student.weight_kg ? String(student.weight_kg) : "",
+      contact_number: student.contact_number || "",
+    });
+    setShowEditStudent(student);
+  };
+
+  const handleEditStudent = async () => {
+    if (!showEditStudent) return;
+    const { error } = await supabase.from("students").update({
+      full_name: editForm.full_name,
+      belt_level: editForm.belt_level,
+      date_of_birth: editForm.date_of_birth || null,
+      date_of_joining: editForm.date_of_joining || null,
+      father_name: editForm.father_name || null,
+      weight_kg: editForm.weight_kg ? parseFloat(editForm.weight_kg) : null,
+      contact_number: editForm.contact_number || null,
+    }).eq("id", showEditStudent.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Student updated!");
+    setShowEditStudent(null);
+    setShowStudentDetail(null);
+    await loadData();
+  };
+
   if (loading) return <Layout><div className="flex items-center justify-center min-h-[60vh] text-muted-foreground">Loading...</div></Layout>;
   if (role === "student") { navigate("/student-profile"); return null; }
 
@@ -400,6 +443,9 @@ const Dashboard = () => {
                           <div className="flex gap-1 flex-wrap">
                             <Button size="sm" variant="outline" className="text-xs border-border h-7" onClick={() => setShowDailyReport(s.id)}>Report</Button>
                             <Button size="sm" variant="outline" className="text-xs border-accent text-accent h-7" onClick={() => generateWeeklyReport(s.id)}>Weekly</Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => openEditStudent(s)}>
+                              <Edit className="h-3 w-3" />
+                            </Button>
                             <label className="cursor-pointer">
                               <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(s.id, e.target.files[0]); }} />
                               <span className="inline-flex items-center h-7 px-2 text-xs border border-border rounded-md hover:bg-secondary transition-colors">
@@ -562,8 +608,14 @@ const Dashboard = () => {
                 <select value={newStudent.belt_level} onChange={(e) => setNewStudent({ ...newStudent, belt_level: e.target.value })} className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground">
                   {BELT_LEVELS.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
-                <Input type="date" placeholder="Date of Birth" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} className="bg-secondary border-border" />
-                <Input type="date" placeholder="Date of Joining" value={newStudent.date_of_joining} onChange={(e) => setNewStudent({ ...newStudent, date_of_joining: e.target.value })} className="bg-secondary border-border" />
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth</label>
+                  <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Joining</label>
+                  <Input type="date" value={newStudent.date_of_joining} onChange={(e) => setNewStudent({ ...newStudent, date_of_joining: e.target.value })} className="bg-secondary border-border" />
+                </div>
                 <Input placeholder="Father's Name" value={newStudent.father_name} onChange={(e) => setNewStudent({ ...newStudent, father_name: e.target.value })} className="bg-secondary border-border" />
                 <Input placeholder="Weight (kg)" type="number" value={newStudent.weight_kg} onChange={(e) => setNewStudent({ ...newStudent, weight_kg: e.target.value })} className="bg-secondary border-border" />
                 <Input placeholder="Contact Number" value={newStudent.contact_number} onChange={(e) => setNewStudent({ ...newStudent, contact_number: e.target.value })} className="bg-secondary border-border" />
@@ -602,12 +654,15 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-                <div><p className="text-muted-foreground text-xs">Father</p><p>{showStudentDetail.father_name || "—"}</p></div>
-                <div><p className="text-muted-foreground text-xs">DOB</p><p>{showStudentDetail.date_of_birth || "—"}</p></div>
-                <div><p className="text-muted-foreground text-xs">Joined</p><p>{showStudentDetail.date_of_joining || "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Father's Name</p><p>{showStudentDetail.father_name || "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Date of Birth</p><p>{showStudentDetail.date_of_birth || "—"}</p></div>
+                <div><p className="text-muted-foreground text-xs">Date of Joining</p><p>{showStudentDetail.date_of_joining || "—"}</p></div>
                 <div><p className="text-muted-foreground text-xs">Weight</p><p>{showStudentDetail.weight_kg ? `${showStudentDetail.weight_kg} kg` : "—"}</p></div>
                 <div><p className="text-muted-foreground text-xs">Contact</p><p>{showStudentDetail.contact_number || "—"}</p></div>
               </div>
+              <Button size="sm" variant="outline" className="mb-4 border-accent text-accent" onClick={() => openEditStudent(showStudentDetail)}>
+                <Edit className="h-3 w-3 mr-1" /> Edit Profile
+              </Button>
               <h4 className="font-heading text-sm font-semibold mb-2">Achievements</h4>
               {studentAchievements.length === 0 ? (
                 <p className="text-muted-foreground text-xs mb-3">No achievements yet.</p>
@@ -630,13 +685,57 @@ const Dashboard = () => {
             </Modal>
           )}
 
+          {/* Edit Student */}
+          {showEditStudent && (
+            <Modal onClose={() => setShowEditStudent(null)} title={`Edit: ${showEditStudent.full_name}`}>
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Full Name</label>
+                  <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Belt Level</label>
+                  <select value={editForm.belt_level} onChange={(e) => setEditForm({ ...editForm, belt_level: e.target.value })} className="w-full bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground">
+                    {BELT_LEVELS.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth</label>
+                  <Input type="date" value={editForm.date_of_birth} onChange={(e) => setEditForm({ ...editForm, date_of_birth: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Joining</label>
+                  <Input type="date" value={editForm.date_of_joining} onChange={(e) => setEditForm({ ...editForm, date_of_joining: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Father's Name</label>
+                  <Input value={editForm.father_name} onChange={(e) => setEditForm({ ...editForm, father_name: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Weight (kg)</label>
+                  <Input type="number" value={editForm.weight_kg} onChange={(e) => setEditForm({ ...editForm, weight_kg: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Contact Number</label>
+                  <Input value={editForm.contact_number} onChange={(e) => setEditForm({ ...editForm, contact_number: e.target.value })} className="bg-secondary border-border" />
+                </div>
+                <Button onClick={handleEditStudent} className="bg-primary hover:bg-crimson-dark text-primary-foreground font-heading">
+                  <Save className="h-4 w-4 mr-1" /> SAVE CHANGES
+                </Button>
+              </div>
+            </Modal>
+          )}
+
           {/* Add Student Achievement */}
           {showAddAchievement && (
             <Modal onClose={() => setShowAddAchievement(null)} title="Add Student Achievement">
               <div className="flex flex-col gap-3">
                 <Input placeholder="Title *" value={newAchievement.title} onChange={(e) => setNewAchievement({ ...newAchievement, title: e.target.value })} required className="bg-secondary border-border" />
                 <Input placeholder="Description" value={newAchievement.description} onChange={(e) => setNewAchievement({ ...newAchievement, description: e.target.value })} className="bg-secondary border-border" />
-                <Input type="date" value={newAchievement.date} onChange={(e) => setNewAchievement({ ...newAchievement, date: e.target.value })} className="bg-secondary border-border" />
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Achievement Date</label>
+                  <Input type="date" value={newAchievement.date} onChange={(e) => setNewAchievement({ ...newAchievement, date: e.target.value })} className="bg-secondary border-border" />
+                </div>
                 <Button onClick={() => handleAddStudentAchievement(showAddAchievement)} className="bg-primary hover:bg-crimson-dark text-primary-foreground font-heading">ADD</Button>
               </div>
             </Modal>
