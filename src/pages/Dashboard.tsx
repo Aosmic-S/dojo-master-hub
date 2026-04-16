@@ -109,7 +109,7 @@ const Dashboard = () => {
         body: newStudent,
       });
       if (res.error) throw new Error(res.error.message);
-      if (res.data?.error) throw new Error(res.data.error);
+      if (!res.data?.ok) throw new Error(res.data?.error || "Failed to create student");
       toast.success("Student added!");
       setShowAddStudent(false);
       setNewStudent({ full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "", father_name: "", weight_kg: "", contact_number: "", email: "", password: "student123" });
