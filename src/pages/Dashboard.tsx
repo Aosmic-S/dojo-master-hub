@@ -929,6 +929,38 @@ const Dashboard = () => {
 
 // ---- Helper Components ----
 
+const KpiCard = ({ icon: Icon, label, value, accent }: { icon: any; label: string; value: number | string; accent: "accent" | "primary" }) => (
+  <div className="relative overflow-hidden bg-card-gradient border border-border rounded-xl p-5 group hover:border-accent/50 transition-colors">
+    <div className={`absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-30 ${accent === "accent" ? "bg-accent" : "bg-primary"}`} />
+    <div className="relative flex items-start justify-between">
+      <div>
+        <p className="text-muted-foreground text-xs uppercase tracking-wider font-medium mb-2">{label}</p>
+        <p className="font-heading text-3xl font-bold">{value}</p>
+      </div>
+      <div className={`p-2.5 rounded-lg ${accent === "accent" ? "bg-accent/15 text-accent" : "bg-primary/15 text-primary"}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+    </div>
+  </div>
+);
+
+const BeltBadge = ({ belt }: { belt: string }) => {
+  const styles: Record<string, string> = {
+    White: "bg-white/10 text-foreground border-white/30",
+    Yellow: "bg-yellow-500/15 text-yellow-400 border-yellow-500/40",
+    Orange: "bg-orange-500/15 text-orange-400 border-orange-500/40",
+    Green: "bg-green-500/15 text-green-400 border-green-500/40",
+    Blue: "bg-blue-500/15 text-blue-400 border-blue-500/40",
+    Purple: "bg-purple-500/15 text-purple-400 border-purple-500/40",
+  };
+  let cls = "bg-primary/15 text-primary border-primary/40";
+  if (belt.startsWith("Brown")) cls = "bg-amber-700/20 text-amber-500 border-amber-700/40";
+  else if (belt.startsWith("Black")) cls = "bg-foreground/10 text-foreground border-foreground/30";
+  else if (styles[belt]) cls = styles[belt];
+  return <span className={`text-xs font-heading uppercase tracking-wide px-2.5 py-1 rounded-full border ${cls}`}>{belt}</span>;
+};
+
+
 const Modal = ({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) => (
   <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
     <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
