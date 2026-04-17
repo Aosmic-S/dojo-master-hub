@@ -437,14 +437,79 @@ const Dashboard = () => {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-secondary border-border" />
+              <div className="bg-card-gradient border border-border rounded-xl p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search by name or belt…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-secondary border-border h-11" />
+                  </div>
+                  <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90 h-11 px-5">
+                    <Plus className="h-4 w-4 mr-1" /> Add Student
+                  </Button>
                 </div>
-                <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90">
-                  <Plus className="h-4 w-4 mr-1" /> Add Student
-                </Button>
+
+                {/* Students Table */}
+                <div className="overflow-x-auto -mx-4 sm:-mx-6">
+                  <table className="w-full text-sm min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-border text-left bg-secondary/30">
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Photo</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Name</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Belt</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Contact</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredStudents.map((s) => (
+                        <tr key={s.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="w-11 h-11 rounded-full bg-secondary overflow-hidden flex items-center justify-center ring-1 ring-border">
+                              {s.profile_photo_url ? (
+                                <img src={s.profile_photo_url} alt={s.full_name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Camera className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <button onClick={() => { setShowStudentDetail(s); loadStudentAchievements(s.id); }} className="font-heading font-semibold hover:text-accent transition-colors text-left">
+                              {s.full_name}
+                            </button>
+                          </td>
+                          <td className="py-3 px-4">
+                            <BeltBadge belt={s.belt_level} />
+                          </td>
+                          <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{s.contact_number || "—"}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex gap-1 flex-wrap">
+                              <Button size="sm" variant="outline" className="text-xs border-border h-8" onClick={() => setShowDailyReport(s.id)}>Report</Button>
+                              <Button size="sm" variant="outline" className="text-xs border-accent text-accent h-8" onClick={() => generateWeeklyReport(s.id)}>
+                                <FileDown className="h-3 w-3 mr-1" /> Weekly PDF
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => openEditStudent(s)} title="Edit">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <label className="cursor-pointer">
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(s.id, e.target.files[0]); }} />
+                                <span className="inline-flex items-center h-8 px-2 text-xs border border-border rounded-md hover:bg-secondary transition-colors" title="Upload photo">
+                                  <Camera className="h-3 w-3" />
+                                </span>
+                              </label>
+                              <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => { setShowAddAchievement(s.id); }} title="Add achievement">
+                                <Award className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-8 border-accent text-accent" onClick={() => setShowPromoteStudent(s)} title="Promote to admin">
+                                <Shield className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredStudents.length === 0 && <p className="text-center text-muted-foreground py-12">No students found.</p>}
+                </div>
               </div>
 
               {/* Students Table */}
