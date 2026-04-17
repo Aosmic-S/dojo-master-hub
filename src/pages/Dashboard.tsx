@@ -149,18 +149,34 @@ const Dashboard = () => {
     const { data: reports } = await supabase.from("daily_reports").select("*")
       .eq("student_id", studentId)
       .gte("date", weekStart.toISOString().split("T")[0])
-      .lte("date", weekEnd.toISOString().split("T")[0]);
+      .lte("date", weekEnd.toISOString().split("T")[0])
+      .order("date");
     if (!reports?.length) { toast.error("No daily reports for this week."); return; }
     const present = reports.filter((r) => r.attendance === "present").length;
     const summary = `Attendance: ${present}/${reports.length} days present.\n\nPerformance Notes:\n${reports.map((r) => `${r.date}: ${r.performance || "N/A"}`).join("\n")}\n\nSkills: ${[...new Set(reports.flatMap((r) => (r.skills_practiced || "").split(",").map((s: string) => s.trim()).filter(Boolean)))].join(", ") || "N/A"}\n\nRemarks: ${reports.map((r) => r.remarks).filter(Boolean).join("; ") || "No remarks."}`;
+    const ws = weekStart.toISOString().split("T")[0];
+    const we = weekEnd.toISOString().split("T")[0];
     const { error } = await supabase.from("weekly_reports").insert({
-      student_id: studentId,
-      week_start: weekStart.toISOString().split("T")[0],
-      week_end: weekEnd.toISOString().split("T")[0],
-      summary,
+      student_id: studentId, week_start: ws, week_end: we, summary,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Weekly report generated & pushed!");
+    toast.success("Weekly report generated, pushed & PDF downloaded!");
+    const student = students.find((s) => s.id === studentId);
+    if (student) generateWeeklyReportPDF({ student, weekStart: ws, weekEnd: we, summary, dailyReports: reports });
+  };
+
+  const downloadWeeklyPDF = async (studentId: string, report: any) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+    const { data: dailies } = await supabase.from("daily_reports").select("*")
+      .eq("student_id", studentId)
+      .gte("date", report.week_start)
+      .lte("date", report.week_end)
+      .order("date");
+    generateWeeklyReportPDF({
+      student, weekStart: report.week_start, weekEnd: report.week_end,
+      summary: report.summary || "", dailyReports: dailies || [],
+    });
   };
 
   // Profile photo upload
