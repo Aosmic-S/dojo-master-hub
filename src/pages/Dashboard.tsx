@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save } from "lucide-react";
+import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 3rd Kyu",
@@ -43,6 +44,7 @@ const Dashboard = () => {
   const [fees, setFees] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [studentAchievements, setStudentAchievements] = useState<any[]>([]);
+  const [studentWeeklyReports, setStudentWeeklyReports] = useState<any[]>([]);
 
   // Forms
   const [newStudent, setNewStudent] = useState({
@@ -148,18 +150,34 @@ const Dashboard = () => {
     const { data: reports } = await supabase.from("daily_reports").select("*")
       .eq("student_id", studentId)
       .gte("date", weekStart.toISOString().split("T")[0])
-      .lte("date", weekEnd.toISOString().split("T")[0]);
+      .lte("date", weekEnd.toISOString().split("T")[0])
+      .order("date");
     if (!reports?.length) { toast.error("No daily reports for this week."); return; }
     const present = reports.filter((r) => r.attendance === "present").length;
     const summary = `Attendance: ${present}/${reports.length} days present.\n\nPerformance Notes:\n${reports.map((r) => `${r.date}: ${r.performance || "N/A"}`).join("\n")}\n\nSkills: ${[...new Set(reports.flatMap((r) => (r.skills_practiced || "").split(",").map((s: string) => s.trim()).filter(Boolean)))].join(", ") || "N/A"}\n\nRemarks: ${reports.map((r) => r.remarks).filter(Boolean).join("; ") || "No remarks."}`;
+    const ws = weekStart.toISOString().split("T")[0];
+    const we = weekEnd.toISOString().split("T")[0];
     const { error } = await supabase.from("weekly_reports").insert({
-      student_id: studentId,
-      week_start: weekStart.toISOString().split("T")[0],
-      week_end: weekEnd.toISOString().split("T")[0],
-      summary,
+      student_id: studentId, week_start: ws, week_end: we, summary,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Weekly report generated & pushed!");
+    toast.success("Weekly report generated, pushed & PDF downloaded!");
+    const student = students.find((s) => s.id === studentId);
+    if (student) generateWeeklyReportPDF({ student, weekStart: ws, weekEnd: we, summary, dailyReports: reports });
+  };
+
+  const downloadWeeklyPDF = async (studentId: string, report: any) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+    const { data: dailies } = await supabase.from("daily_reports").select("*")
+      .eq("student_id", studentId)
+      .gte("date", report.week_start)
+      .lte("date", report.week_end)
+      .order("date");
+    generateWeeklyReportPDF({
+      student, weekStart: report.week_start, weekEnd: report.week_end,
+      summary: report.summary || "", dailyReports: dailies || [],
+    });
   };
 
   // Profile photo upload
@@ -177,8 +195,12 @@ const Dashboard = () => {
 
   // Student achievements
   const loadStudentAchievements = async (studentId: string) => {
-    const { data } = await supabase.from("achievements").select("*").eq("student_id", studentId).order("date", { ascending: false });
-    setStudentAchievements(data || []);
+    const [achRes, weekRes] = await Promise.all([
+      supabase.from("achievements").select("*").eq("student_id", studentId).order("date", { ascending: false }),
+      supabase.from("weekly_reports").select("*").eq("student_id", studentId).order("pushed_at", { ascending: false }),
+    ]);
+    setStudentAchievements(achRes.data || []);
+    setStudentWeeklyReports(weekRes.data || []);
   };
 
   const handleAddStudentAchievement = async (studentId: string) => {
@@ -348,25 +370,46 @@ const Dashboard = () => {
     { key: "settings", label: "Settings", icon: Settings },
   ];
 
+  // Extra stats
+  const blackBelts = students.filter((s) => s.belt_level.startsWith("Black")).length;
+  const newThisMonth = students.filter((s) => {
+    if (!s.created_at) return false;
+    const d = new Date(s.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
   return (
     <Layout>
-      <section className="py-8">
+      <section className="py-6 sm:py-10">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold">
-              ADMIN <span className="text-gold-gradient">DASHBOARD</span>
-            </h1>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground">
-              <LogOut className="h-4 w-4 mr-1" /> Logout
-            </Button>
+          {/* Header / Welcome */}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card-gradient p-6 sm:p-8 mb-8">
+            <div className="absolute inset-0 bg-hero-gradient opacity-40 pointer-events-none" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-accent font-heading mb-2">Sensei Console</p>
+                <h1 className="font-heading text-3xl sm:text-4xl font-bold leading-tight">
+                  ADMIN <span className="text-gold-gradient">DASHBOARD</span>
+                </h1>
+                <p className="text-muted-foreground text-sm mt-2">Welcome back, {user?.email?.split("@")[0]}. Manage the dojo from one place.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground self-start sm:self-auto">
+                <LogOut className="h-4 w-4 mr-1" /> Logout
+              </Button>
+            </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 -mx-1 px-1">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === t.key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                <t.icon className="h-3.5 w-3.5" /> {t.label}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${activeTab === t.key
+                  ? "bg-accent text-accent-foreground border-accent gold-glow"
+                  : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border hover:border-accent/50"}`}>
+                <t.icon className="h-4 w-4" /> {t.label}
               </button>
             ))}
           </div>
@@ -374,36 +417,104 @@ const Dashboard = () => {
           {/* ============ STUDENTS TAB ============ */}
           {activeTab === "students" && (
             <>
-              {/* Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <Users className="h-7 w-7 text-accent" />
-                  <div><p className="text-muted-foreground text-xs">Total Students</p><p className="font-heading text-xl font-bold">{students.length}</p></div>
-                </div>
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <Award className="h-7 w-7 text-primary" />
-                  <div><p className="text-muted-foreground text-xs">Belt Levels</p><p className="font-heading text-xl font-bold">{beltDistribution.length}</p></div>
-                </div>
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <BarChart3 className="h-7 w-7 text-accent" />
-                  <div><p className="text-muted-foreground text-xs">Belt Distribution</p>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {beltDistribution.slice(0, 4).map((b) => (
-                        <span key={b.belt} className="text-[10px] px-1.5 py-0.5 bg-secondary rounded">{b.belt}: {b.count}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <KpiCard icon={Users} label="Total Students" value={students.length} accent="accent" />
+                <KpiCard icon={Shield} label="Black Belts" value={blackBelts} accent="primary" />
+                <KpiCard icon={TrendingUp} label="New This Month" value={newThisMonth} accent="accent" />
+                <KpiCard icon={Activity} label="Belt Levels Active" value={beltDistribution.length} accent="primary" />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search students..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-secondary border-border" />
+              {/* Belt distribution strip */}
+              {beltDistribution.length > 0 && (
+                <div className="bg-card-gradient border border-border rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BarChart3 className="h-4 w-4 text-accent" />
+                    <h3 className="font-heading text-sm font-semibold uppercase tracking-wide">Belt Distribution</h3>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {beltDistribution.map((b) => (
+                      <span key={b.belt} className="text-xs px-3 py-1.5 bg-secondary border border-border rounded-full">
+                        <span className="text-muted-foreground">{b.belt}:</span> <span className="text-accent font-semibold ml-1">{b.count}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90">
-                  <Plus className="h-4 w-4 mr-1" /> Add Student
-                </Button>
+              )}
+
+              <div className="bg-card-gradient border border-border rounded-xl p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search by name or belt…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10 bg-secondary border-border h-11" />
+                  </div>
+                  <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90 h-11 px-5">
+                    <Plus className="h-4 w-4 mr-1" /> Add Student
+                  </Button>
+                </div>
+
+                {/* Students Table */}
+                <div className="overflow-x-auto -mx-4 sm:-mx-6">
+                  <table className="w-full text-sm min-w-[640px]">
+                    <thead>
+                      <tr className="border-b border-border text-left bg-secondary/30">
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Photo</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Name</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Belt</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Contact</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredStudents.map((s) => (
+                        <tr key={s.id} className="border-b border-border/50 hover:bg-secondary/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="w-11 h-11 rounded-full bg-secondary overflow-hidden flex items-center justify-center ring-1 ring-border">
+                              {s.profile_photo_url ? (
+                                <img src={s.profile_photo_url} alt={s.full_name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Camera className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <button onClick={() => { setShowStudentDetail(s); loadStudentAchievements(s.id); }} className="font-heading font-semibold hover:text-accent transition-colors text-left">
+                              {s.full_name}
+                            </button>
+                          </td>
+                          <td className="py-3 px-4">
+                            <BeltBadge belt={s.belt_level} />
+                          </td>
+                          <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{s.contact_number || "—"}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex gap-1 flex-wrap">
+                              <Button size="sm" variant="outline" className="text-xs border-border h-8" onClick={() => setShowDailyReport(s.id)}>Report</Button>
+                              <Button size="sm" variant="outline" className="text-xs border-accent text-accent h-8" onClick={() => generateWeeklyReport(s.id)}>
+                                <FileDown className="h-3 w-3 mr-1" /> Weekly PDF
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => openEditStudent(s)} title="Edit">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <label className="cursor-pointer">
+                                <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handlePhotoUpload(s.id, e.target.files[0]); }} />
+                                <span className="inline-flex items-center h-8 px-2 text-xs border border-border rounded-md hover:bg-secondary transition-colors" title="Upload photo">
+                                  <Camera className="h-3 w-3" />
+                                </span>
+                              </label>
+                              <Button size="sm" variant="outline" className="text-xs h-8" onClick={() => { setShowAddAchievement(s.id); }} title="Add achievement">
+                                <Award className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-8 border-accent text-accent" onClick={() => setShowPromoteStudent(s)} title="Promote to admin">
+                                <Shield className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredStudents.length === 0 && <p className="text-center text-muted-foreground py-12">No students found.</p>}
+                </div>
               </div>
 
               {/* Students Table */}
@@ -679,9 +790,30 @@ const Dashboard = () => {
                   ))}
                 </div>
               )}
-              <Button size="sm" onClick={() => setShowAddAchievement(showStudentDetail.id)} className="bg-accent text-accent-foreground font-heading text-xs">
+              <Button size="sm" onClick={() => setShowAddAchievement(showStudentDetail.id)} className="bg-accent text-accent-foreground font-heading text-xs mb-5">
                 <Plus className="h-3 w-3 mr-1" /> Add Achievement
               </Button>
+
+              <h4 className="font-heading text-sm font-semibold mb-2 flex items-center gap-2">
+                <FileDown className="h-4 w-4 text-accent" /> Weekly Reports
+              </h4>
+              {studentWeeklyReports.length === 0 ? (
+                <p className="text-muted-foreground text-xs">No weekly reports yet. Click <em>Weekly PDF</em> on the student row to generate one.</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {studentWeeklyReports.map((r) => (
+                    <div key={r.id} className="flex justify-between items-center bg-secondary rounded p-2 text-xs">
+                      <div>
+                        <p className="font-medium">{r.week_start} → {r.week_end}</p>
+                        <p className="text-muted-foreground text-[10px]">Pushed {new Date(r.pushed_at).toLocaleDateString()}</p>
+                      </div>
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={() => downloadWeeklyPDF(showStudentDetail.id, r)}>
+                        <FileDown className="h-3 w-3 mr-1" /> PDF
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Modal>
           )}
 
@@ -796,6 +928,38 @@ const Dashboard = () => {
 };
 
 // ---- Helper Components ----
+
+const KpiCard = ({ icon: Icon, label, value, accent }: { icon: any; label: string; value: number | string; accent: "accent" | "primary" }) => (
+  <div className="relative overflow-hidden bg-card-gradient border border-border rounded-xl p-5 group hover:border-accent/50 transition-colors">
+    <div className={`absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-30 ${accent === "accent" ? "bg-accent" : "bg-primary"}`} />
+    <div className="relative flex items-start justify-between">
+      <div>
+        <p className="text-muted-foreground text-xs uppercase tracking-wider font-medium mb-2">{label}</p>
+        <p className="font-heading text-3xl font-bold">{value}</p>
+      </div>
+      <div className={`p-2.5 rounded-lg ${accent === "accent" ? "bg-accent/15 text-accent" : "bg-primary/15 text-primary"}`}>
+        <Icon className="h-5 w-5" />
+      </div>
+    </div>
+  </div>
+);
+
+const BeltBadge = ({ belt }: { belt: string }) => {
+  const styles: Record<string, string> = {
+    White: "bg-white/10 text-foreground border-white/30",
+    Yellow: "bg-yellow-500/15 text-yellow-400 border-yellow-500/40",
+    Orange: "bg-orange-500/15 text-orange-400 border-orange-500/40",
+    Green: "bg-green-500/15 text-green-400 border-green-500/40",
+    Blue: "bg-blue-500/15 text-blue-400 border-blue-500/40",
+    Purple: "bg-purple-500/15 text-purple-400 border-purple-500/40",
+  };
+  let cls = "bg-primary/15 text-primary border-primary/40";
+  if (belt.startsWith("Brown")) cls = "bg-amber-700/20 text-amber-500 border-amber-700/40";
+  else if (belt.startsWith("Black")) cls = "bg-foreground/10 text-foreground border-foreground/30";
+  else if (styles[belt]) cls = styles[belt];
+  return <span className={`text-xs font-heading uppercase tracking-wide px-2.5 py-1 rounded-full border ${cls}`}>{belt}</span>;
+};
+
 
 const Modal = ({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) => (
   <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>

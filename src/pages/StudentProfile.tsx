@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Award, Calendar, FileText, Megaphone } from "lucide-react";
+import { LogOut, User, Award, Calendar, FileText, Megaphone, FileDown } from "lucide-react";
+import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 
 const StudentProfile = () => {
   const [student, setStudent] = useState<any>(null);
@@ -134,7 +135,16 @@ const StudentProfile = () => {
               <div className="flex flex-col gap-3">
                 {weeklyReports.map((r) => (
                   <div key={r.id} className="bg-card-gradient border border-border rounded-lg p-4">
-                    <p className="text-xs text-accent font-heading mb-2">{r.week_start} — {r.week_end}</p>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <p className="text-xs text-accent font-heading">{r.week_start} — {r.week_end}</p>
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={async () => {
+                        const { data: dailies } = await supabase.from("daily_reports").select("*")
+                          .eq("student_id", student.id).gte("date", r.week_start).lte("date", r.week_end).order("date");
+                        generateWeeklyReportPDF({ student, weekStart: r.week_start, weekEnd: r.week_end, summary: r.summary || "", dailyReports: dailies || [] });
+                      }}>
+                        <FileDown className="h-3 w-3 mr-1" /> PDF
+                      </Button>
+                    </div>
                     <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">{r.summary}</pre>
                   </div>
                 ))}
