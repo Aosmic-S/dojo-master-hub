@@ -195,8 +195,12 @@ const Dashboard = () => {
 
   // Student achievements
   const loadStudentAchievements = async (studentId: string) => {
-    const { data } = await supabase.from("achievements").select("*").eq("student_id", studentId).order("date", { ascending: false });
-    setStudentAchievements(data || []);
+    const [achRes, weekRes] = await Promise.all([
+      supabase.from("achievements").select("*").eq("student_id", studentId).order("date", { ascending: false }),
+      supabase.from("weekly_reports").select("*").eq("student_id", studentId).order("pushed_at", { ascending: false }),
+    ]);
+    setStudentAchievements(achRes.data || []);
+    setStudentWeeklyReports(weekRes.data || []);
   };
 
   const handleAddStudentAchievement = async (studentId: string) => {
