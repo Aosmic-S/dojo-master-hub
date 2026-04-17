@@ -790,9 +790,30 @@ const Dashboard = () => {
                   ))}
                 </div>
               )}
-              <Button size="sm" onClick={() => setShowAddAchievement(showStudentDetail.id)} className="bg-accent text-accent-foreground font-heading text-xs">
+              <Button size="sm" onClick={() => setShowAddAchievement(showStudentDetail.id)} className="bg-accent text-accent-foreground font-heading text-xs mb-5">
                 <Plus className="h-3 w-3 mr-1" /> Add Achievement
               </Button>
+
+              <h4 className="font-heading text-sm font-semibold mb-2 flex items-center gap-2">
+                <FileDown className="h-4 w-4 text-accent" /> Weekly Reports
+              </h4>
+              {studentWeeklyReports.length === 0 ? (
+                <p className="text-muted-foreground text-xs">No weekly reports yet. Click <em>Weekly PDF</em> on the student row to generate one.</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {studentWeeklyReports.map((r) => (
+                    <div key={r.id} className="flex justify-between items-center bg-secondary rounded p-2 text-xs">
+                      <div>
+                        <p className="font-medium">{r.week_start} → {r.week_end}</p>
+                        <p className="text-muted-foreground text-[10px]">Pushed {new Date(r.pushed_at).toLocaleDateString()}</p>
+                      </div>
+                      <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={() => downloadWeeklyPDF(showStudentDetail.id, r)}>
+                        <FileDown className="h-3 w-3 mr-1" /> PDF
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Modal>
           )}
 
