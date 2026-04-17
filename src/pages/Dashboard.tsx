@@ -365,25 +365,46 @@ const Dashboard = () => {
     { key: "settings", label: "Settings", icon: Settings },
   ];
 
+  // Extra stats
+  const blackBelts = students.filter((s) => s.belt_level.startsWith("Black")).length;
+  const newThisMonth = students.filter((s) => {
+    if (!s.created_at) return false;
+    const d = new Date(s.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
   return (
     <Layout>
-      <section className="py-8">
+      <section className="py-6 sm:py-10">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold">
-              ADMIN <span className="text-gold-gradient">DASHBOARD</span>
-            </h1>
-            <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground">
-              <LogOut className="h-4 w-4 mr-1" /> Logout
-            </Button>
+          {/* Header / Welcome */}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card-gradient p-6 sm:p-8 mb-8">
+            <div className="absolute inset-0 bg-hero-gradient opacity-40 pointer-events-none" />
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
+            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.25em] text-accent font-heading mb-2">Sensei Console</p>
+                <h1 className="font-heading text-3xl sm:text-4xl font-bold leading-tight">
+                  ADMIN <span className="text-gold-gradient">DASHBOARD</span>
+                </h1>
+                <p className="text-muted-foreground text-sm mt-2">Welcome back, {user?.email?.split("@")[0]}. Manage the dojo from one place.</p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground self-start sm:self-auto">
+                <LogOut className="h-4 w-4 mr-1" /> Logout
+              </Button>
+            </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
+          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 -mx-1 px-1">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeTab === t.key ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                <t.icon className="h-3.5 w-3.5" /> {t.label}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${activeTab === t.key
+                  ? "bg-accent text-accent-foreground border-accent gold-glow"
+                  : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border hover:border-accent/50"}`}>
+                <t.icon className="h-4 w-4" /> {t.label}
               </button>
             ))}
           </div>
@@ -391,27 +412,30 @@ const Dashboard = () => {
           {/* ============ STUDENTS TAB ============ */}
           {activeTab === "students" && (
             <>
-              {/* Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <Users className="h-7 w-7 text-accent" />
-                  <div><p className="text-muted-foreground text-xs">Total Students</p><p className="font-heading text-xl font-bold">{students.length}</p></div>
-                </div>
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <Award className="h-7 w-7 text-primary" />
-                  <div><p className="text-muted-foreground text-xs">Belt Levels</p><p className="font-heading text-xl font-bold">{beltDistribution.length}</p></div>
-                </div>
-                <div className="bg-card-gradient border border-border rounded-lg p-4 flex items-center gap-3">
-                  <BarChart3 className="h-7 w-7 text-accent" />
-                  <div><p className="text-muted-foreground text-xs">Belt Distribution</p>
-                    <div className="flex gap-1 flex-wrap mt-1">
-                      {beltDistribution.slice(0, 4).map((b) => (
-                        <span key={b.belt} className="text-[10px] px-1.5 py-0.5 bg-secondary rounded">{b.belt}: {b.count}</span>
-                      ))}
-                    </div>
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <KpiCard icon={Users} label="Total Students" value={students.length} accent="accent" />
+                <KpiCard icon={Shield} label="Black Belts" value={blackBelts} accent="primary" />
+                <KpiCard icon={TrendingUp} label="New This Month" value={newThisMonth} accent="accent" />
+                <KpiCard icon={Activity} label="Belt Levels Active" value={beltDistribution.length} accent="primary" />
+              </div>
+
+              {/* Belt distribution strip */}
+              {beltDistribution.length > 0 && (
+                <div className="bg-card-gradient border border-border rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BarChart3 className="h-4 w-4 text-accent" />
+                    <h3 className="font-heading text-sm font-semibold uppercase tracking-wide">Belt Distribution</h3>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {beltDistribution.map((b) => (
+                      <span key={b.belt} className="text-xs px-3 py-1.5 bg-secondary border border-border rounded-full">
+                        <span className="text-muted-foreground">{b.belt}:</span> <span className="text-accent font-semibold ml-1">{b.count}</span>
+                      </span>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <div className="relative flex-1">
