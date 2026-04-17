@@ -44,6 +44,7 @@ const Dashboard = () => {
   const [fees, setFees] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [studentAchievements, setStudentAchievements] = useState<any[]>([]);
+  const [studentWeeklyReports, setStudentWeeklyReports] = useState<any[]>([]);
 
   // Forms
   const [newStudent, setNewStudent] = useState({
