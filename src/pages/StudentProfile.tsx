@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Award, Calendar, FileText, Megaphone } from "lucide-react";
+import { LogOut, User, Award, Calendar, FileText, Megaphone, FileDown } from "lucide-react";
+import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 
 const StudentProfile = () => {
   const [student, setStudent] = useState<any>(null);
