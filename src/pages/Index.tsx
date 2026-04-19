@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, Award, Users, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
 import heroBg from "@/assets/hero-bg.jpg";
-
-const affiliations = ["World Karate Fedration", "Karate India Fedration", "South Asian Karate Fedration", "International Olympic Committee", "Asian Karate Fedration", "Commonweath Karate Fedration"];
+import AffiliationsStrip from "@/components/AffiliationsStrip";
 
 const Index = () => (
   <Layout>
@@ -36,15 +35,13 @@ const Index = () => (
           </Link>
         </div>
 
-        <div className="flex flex-wrap gap-3 mt-12 animate-fade-in" style={{ animationDelay: "0.6s" }}>
-          {affiliations.map((a) => (
-            <span key={a} className="text-xs px-3 py-1.5 rounded-full border border-accent/30 text-accent/80 font-medium tracking-wide">
-              {a}
-            </span>
-          ))}
-        </div>
+        <p className="mt-12 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: "0.6s" }}>
+          Recognised by world & national karate bodies — see our affiliations below.
+        </p>
       </div>
     </section>
+
+    <AffiliationsStrip />
 
     {/* Stats */}
     <section className="bg-secondary py-16">

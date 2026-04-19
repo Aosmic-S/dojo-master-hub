@@ -151,6 +151,11 @@ const StudentProfile = () => {
             )}
           </div>
 
+          {/* Academy Events */}
+          <div className="mb-8">
+            <EventsCalendar canManage={false} />
+          </div>
+
           {/* Achievements */}
           <div>
             <div className="flex items-center gap-2 mb-4">
