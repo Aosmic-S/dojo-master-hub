@@ -7,18 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
+import { useAuthReady } from "@/hooks/useAuthReady";
+import AttendanceChart from "@/components/AttendanceChart";
+import EventsCalendar from "@/components/EventsCalendar";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
-type Tab = "students" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
+type Tab = "students" | "analytics" | "calendar" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isReady } = useAuthReady();
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<any[]>([]);
