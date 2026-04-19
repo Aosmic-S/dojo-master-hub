@@ -88,32 +88,20 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (!session) { navigate("/login"); return; }
-      setUser(session.user);
-      setAdminEmail(session.user.email || "");
-
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+    if (!isReady) return;
+    if (!user) { navigate("/login"); return; }
+    let cancelled = false;
+    (async () => {
+      setAdminEmail(user.email || "");
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (cancelled) return;
       const userRole = roles?.[0]?.role || "student";
       setRole(userRole);
-
       if (userRole === "admin") await loadData();
-      setLoading(false);
-    };
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      if (!session) navigate("/login");
-      else setUser(session.user);
-    });
-
-    return () => { mounted = false; subscription.unsubscribe(); };
-  }, [navigate, loadData]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isReady, user, navigate, loadData]);
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
 
