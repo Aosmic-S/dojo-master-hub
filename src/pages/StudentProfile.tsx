@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Award, Calendar, FileText, Megaphone, FileDown } from "lucide-react";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
+import { useAuthReady } from "@/hooks/useAuthReady";
+import EventsCalendar from "@/components/EventsCalendar";
 
 const StudentProfile = () => {
   const [student, setStudent] = useState<any>(null);
@@ -14,23 +16,20 @@ const StudentProfile = () => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { user, isReady } = useAuthReady();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) navigate("/login");
-    });
-
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/login"); return; }
-
-      const { data: studentData } = await supabase.from("students").select("*").eq("user_id", session.user.id).maybeSingle();
+    if (!isReady) return;
+    if (!user) { navigate("/login"); return; }
+    let cancelled = false;
+    (async () => {
+      const { data: studentData } = await supabase.from("students").select("*").eq("user_id", user.id).maybeSingle();
+      if (cancelled) return;
       if (!studentData) {
-        const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+        const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
         if (roles?.[0]?.role === "admin") { navigate("/dashboard"); return; }
       }
       setStudent(studentData);
-
       if (studentData) {
         const [weeklyRes, dailyRes, achRes, annRes] = await Promise.all([
           supabase.from("weekly_reports").select("*").eq("student_id", studentData.id).order("pushed_at", { ascending: false }),
@@ -38,16 +37,16 @@ const StudentProfile = () => {
           supabase.from("achievements").select("*").eq("student_id", studentData.id).order("date", { ascending: false }),
           supabase.from("announcements").select("*").order("created_at", { ascending: false }).limit(10),
         ]);
+        if (cancelled) return;
         setWeeklyReports(weeklyRes.data || []);
         setDailyReports(dailyRes.data || []);
         setAchievements(achRes.data || []);
         setAnnouncements(annRes.data || []);
       }
-      setLoading(false);
-    };
-    init();
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isReady, user, navigate]);
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
 

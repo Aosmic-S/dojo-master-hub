@@ -353,6 +353,8 @@ const Dashboard = () => {
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
     { key: "students", label: "Students", icon: Users },
+    { key: "analytics", label: "Analytics", icon: Activity },
+    { key: "calendar", label: "Calendar", icon: Calendar },
     { key: "achievements", label: "Achievements", icon: Award },
     { key: "gallery", label: "Gallery", icon: Image },
     { key: "timings", label: "Timings & Fees", icon: BarChart3 },
@@ -569,6 +571,22 @@ const Dashboard = () => {
               </div>
             </>
           )}
+
+          {/* ============ ANALYTICS TAB ============ */}
+          {activeTab === "analytics" && (
+            <div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <KpiCard icon={Users} label="Total Students" value={students.length} accent="accent" />
+                <KpiCard icon={Shield} label="Black Belts" value={blackBelts} accent="primary" />
+                <KpiCard icon={TrendingUp} label="New This Month" value={newThisMonth} accent="accent" />
+                <KpiCard icon={Activity} label="Belt Levels Active" value={beltDistribution.length} accent="primary" />
+              </div>
+              <AttendanceChart />
+            </div>
+          )}
+
+          {/* ============ CALENDAR TAB ============ */}
+          {activeTab === "calendar" && <EventsCalendar canManage={role === "admin"} />}
 
           {/* ============ ACHIEVEMENTS TAB ============ */}
           {activeTab === "achievements" && (
