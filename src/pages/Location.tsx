@@ -16,7 +16,7 @@ const Location = () => (
         <div className="grid lg:grid-cols-2 gap-10">
           <div className="rounded-lg overflow-hidden border border-border aspect-video">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.8743!2d85.1376!3d26.6013!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDM2JzA0LjciTiA4NcKwMDgnMTUuNCJF!5e0!3m2!1sen!2sin!4v1234567890"
+              src="https://www.google.com/maps?q=Shimla+Bypass+Rd,+near+shiv+mandir,+Medinipur,+Vikasnager,+Uttarakhand+248142&output=embed"
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -34,9 +34,13 @@ const Location = () => (
                 <div>
                   <h3 className="font-heading text-lg font-semibold mb-1">Address</h3>
                   <p className="text-muted-foreground text-sm">
-                    Raja Janak Academy, Main Road,<br />
-                    Near City Center, Bihar, India
+                    Shimla Bypass Rd, near Shiv Mandir,<br />
+                    Medinipur, Vikasnagar,<br />
+                    Uttarakhand 248142
                   </p>
+                  <a href="https://maps.app.goo.gl/6pwehRmZg7Kj3i6o8?g_st=ac" target="_blank" rel="noopener noreferrer" className="text-accent text-xs hover:underline inline-block mt-2">
+                    Open in Google Maps →
+                  </a>
                 </div>
               </div>
             </div>
@@ -46,7 +50,7 @@ const Location = () => (
                 <Phone className="h-6 w-6 text-accent shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-heading text-lg font-semibold mb-1">Phone</h3>
-                  <p className="text-muted-foreground text-sm">+91 98765 43210</p>
+                  <a href="tel:+916396448776" className="text-muted-foreground text-sm hover:text-accent transition-colors">+91 63964 48776</a>
                 </div>
               </div>
             </div>
@@ -61,7 +65,7 @@ const Location = () => (
               </div>
             </div>
 
-            <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer">
+            <a href="https://wa.me/916396448776" target="_blank" rel="noopener noreferrer">
               <Button className="w-full bg-[hsl(142,70%,35%)] hover:bg-[hsl(142,70%,30%)] text-primary-foreground font-heading text-lg py-6">
                 💬 Chat on WhatsApp
               </Button>

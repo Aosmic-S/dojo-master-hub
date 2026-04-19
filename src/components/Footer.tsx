@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Phone, MapPin } from "lucide-react";
 
 const Footer = () => (
   <footer className="bg-secondary border-t border-border py-10">
@@ -6,9 +7,16 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         <div>
           <h3 className="font-heading text-xl text-gold-gradient mb-3">RAJA JANAK ACADEMY</h3>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm mb-3">
             Affiliated with Drona Martial Arts Academy. Training champions since inception.
           </p>
+          <a href="tel:+916396448776" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors mb-1">
+            <Phone className="h-3.5 w-3.5 text-accent" /> +91 63964 48776
+          </a>
+          <a href="https://maps.app.goo.gl/6pwehRmZg7Kj3i6o8?g_st=ac" target="_blank" rel="noopener noreferrer" className="flex items-start gap-2 text-sm text-muted-foreground hover:text-accent transition-colors">
+            <MapPin className="h-3.5 w-3.5 text-accent mt-0.5 shrink-0" />
+            <span>Shimla Bypass Rd, near Shiv Mandir,<br />Medinipur, Vikasnagar, Uttarakhand 248142</span>
+          </a>
         </div>
         <div>
           <h4 className="font-heading text-sm uppercase tracking-wider text-accent mb-3">Quick Links</h4>
@@ -23,7 +31,7 @@ const Footer = () => (
         <div>
           <h4 className="font-heading text-sm uppercase tracking-wider text-accent mb-3">Affiliations</h4>
           <div className="flex flex-wrap gap-2">
-            {["WKF", "KIO", "SAKF", "IOC", "CWG"].map((a) => (
+            {["WKF", "KIO", "CKF", "OCA", "IOC", "UKA", "Shitokai"].map((a) => (
               <span key={a} className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground border border-border">
                 {a}
               </span>

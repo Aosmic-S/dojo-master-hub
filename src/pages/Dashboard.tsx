@@ -7,18 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
+import { useAuthReady } from "@/hooks/useAuthReady";
+import AttendanceChart from "@/components/AttendanceChart";
+import EventsCalendar from "@/components/EventsCalendar";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
-type Tab = "students" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
+type Tab = "students" | "analytics" | "calendar" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, isReady } = useAuthReady();
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<any[]>([]);
@@ -86,32 +88,20 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!mounted) return;
-      if (!session) { navigate("/login"); return; }
-      setUser(session.user);
-      setAdminEmail(session.user.email || "");
-
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+    if (!isReady) return;
+    if (!user) { navigate("/login"); return; }
+    let cancelled = false;
+    (async () => {
+      setAdminEmail(user.email || "");
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (cancelled) return;
       const userRole = roles?.[0]?.role || "student";
       setRole(userRole);
-
       if (userRole === "admin") await loadData();
-      setLoading(false);
-    };
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      if (!session) navigate("/login");
-      else setUser(session.user);
-    });
-
-    return () => { mounted = false; subscription.unsubscribe(); };
-  }, [navigate, loadData]);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [isReady, user, navigate, loadData]);
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/"); };
 
@@ -363,6 +353,8 @@ const Dashboard = () => {
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
     { key: "students", label: "Students", icon: Users },
+    { key: "analytics", label: "Analytics", icon: Activity },
+    { key: "calendar", label: "Calendar", icon: Calendar },
     { key: "achievements", label: "Achievements", icon: Award },
     { key: "gallery", label: "Gallery", icon: Image },
     { key: "timings", label: "Timings & Fees", icon: BarChart3 },
@@ -579,6 +571,22 @@ const Dashboard = () => {
               </div>
             </>
           )}
+
+          {/* ============ ANALYTICS TAB ============ */}
+          {activeTab === "analytics" && (
+            <div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <KpiCard icon={Users} label="Total Students" value={students.length} accent="accent" />
+                <KpiCard icon={Shield} label="Black Belts" value={blackBelts} accent="primary" />
+                <KpiCard icon={TrendingUp} label="New This Month" value={newThisMonth} accent="accent" />
+                <KpiCard icon={Activity} label="Belt Levels Active" value={beltDistribution.length} accent="primary" />
+              </div>
+              <AttendanceChart />
+            </div>
+          )}
+
+          {/* ============ CALENDAR TAB ============ */}
+          {activeTab === "calendar" && <EventsCalendar canManage={role === "admin"} />}
 
           {/* ============ ACHIEVEMENTS TAB ============ */}
           {activeTab === "achievements" && (
