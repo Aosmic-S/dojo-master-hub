@@ -41,6 +41,54 @@ export type Database = {
         }
         Relationships: []
       }
+      academy_events: {
+        Row: {
+          audience: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_color: string
+          end_time: string | null
+          event_date: string
+          id: string
+          is_all_day: boolean
+          location: string | null
+          start_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_color?: string
+          end_time?: string | null
+          event_date: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_color?: string
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          is_all_day?: boolean
+          location?: string | null
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           created_at: string
