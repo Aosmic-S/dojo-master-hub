@@ -356,7 +356,8 @@ const Dashboard = () => {
 
   const filteredStudents = students.filter((s) =>
     s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    s.belt_level.toLowerCase().includes(search.toLowerCase())
+    s.belt_level.toLowerCase().includes(search.toLowerCase()) ||
+    (s.roll_no || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const beltDistribution = BELT_LEVELS.map((b) => ({
@@ -463,6 +464,7 @@ const Dashboard = () => {
                     <thead>
                       <tr className="border-b border-border text-left bg-secondary/30">
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Photo</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-accent">Roll No</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Name</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Belt</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Contact</th>
@@ -480,6 +482,9 @@ const Dashboard = () => {
                                 <Camera className="h-4 w-4 text-muted-foreground" />
                               )}
                             </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-heading text-accent text-sm">{s.roll_no || "—"}</span>
                           </td>
                           <td className="py-3 px-4">
                             <button onClick={() => { setShowStudentDetail(s); loadStudentAchievements(s.id); }} className="font-heading font-semibold hover:text-accent transition-colors text-left">
@@ -848,6 +853,11 @@ const Dashboard = () => {
           {showEditStudent && (
             <Modal onClose={() => setShowEditStudent(null)} title={`Edit: ${showEditStudent.full_name}`}>
               <div className="flex flex-col gap-3">
+                <div>
+                  <label className="text-xs text-accent font-heading uppercase tracking-wider mb-1 block">Roll No. (login ID)</label>
+                  <Input value={editForm.roll_no} onChange={(e) => setEditForm({ ...editForm, roll_no: e.target.value.toUpperCase() })} className="bg-secondary border-accent/50 uppercase font-heading" />
+                  <p className="text-[11px] text-muted-foreground mt-1">Changing this updates the student's login Roll No.</p>
+                </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Full Name</label>
                   <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="bg-secondary border-border" />
