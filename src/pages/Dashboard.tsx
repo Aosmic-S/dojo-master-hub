@@ -891,6 +891,26 @@ const Dashboard = () => {
                 <Button onClick={handleEditStudent} className="bg-primary hover:bg-crimson-dark text-primary-foreground font-heading">
                   <Save className="h-4 w-4 mr-1" /> SAVE CHANGES
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-accent/50 text-accent hover:bg-accent/10 font-heading"
+                  onClick={async () => {
+                    const { data, error } = await supabase.functions.invoke("resync-student-auth", {
+                      body: { student_id: showEditStudent.id },
+                    });
+                    if (error || !data?.ok) {
+                      toast.error(data?.error || error?.message || "Resync failed");
+                    } else {
+                      toast.success("Login reset. Student can sign in with Roll No + DOB.");
+                    }
+                  }}
+                >
+                  Reset Login (Roll No + DOB)
+                </Button>
+                <p className="text-[11px] text-muted-foreground">
+                  Use this if the student can't log in. It re-syncs the auth account so the password is the DOB.
+                </p>
               </div>
             </Modal>
           )}
