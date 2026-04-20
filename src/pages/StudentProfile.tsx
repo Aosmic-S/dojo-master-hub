@@ -3,18 +3,32 @@ import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Award, Calendar, FileText, Megaphone, FileDown } from "lucide-react";
+import { LogOut, User, Award, Calendar, FileText, Megaphone, FileDown, BookOpen, Target, Library, Trophy, MessageCircle, CalendarCheck, LayoutGrid, Activity } from "lucide-react";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import EventsCalendar from "@/components/EventsCalendar";
+import TrainingJournal from "@/components/student/TrainingJournal";
+import GoalsTracker from "@/components/student/GoalsTracker";
+import BeltRoadmap from "@/components/student/BeltRoadmap";
+import TechniqueLibrary from "@/components/student/TechniqueLibrary";
+import AttendanceHeatmap from "@/components/student/AttendanceHeatmap";
+import Leaderboard from "@/components/student/Leaderboard";
+import MessageSensei from "@/components/student/MessageSensei";
+import EventRsvp from "@/components/student/EventRsvp";
+import BadgesShelf from "@/components/student/BadgesShelf";
+import PhotoUpload from "@/components/student/PhotoUpload";
+
+type Tab = "overview" | "journal" | "goals" | "roadmap" | "library" | "heatmap" | "leaderboard" | "messages" | "events" | "badges";
 
 const StudentProfile = () => {
   const [student, setStudent] = useState<any>(null);
+  const [photoUrl, setPhotoUrl] = useState<string>("");
   const [weeklyReports, setWeeklyReports] = useState<any[]>([]);
   const [dailyReports, setDailyReports] = useState<any[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>("overview");
   const navigate = useNavigate();
   const { user, isReady } = useAuthReady();
 
@@ -30,6 +44,7 @@ const StudentProfile = () => {
         if (roles?.[0]?.role === "admin") { navigate("/dashboard"); return; }
       }
       setStudent(studentData);
+      setPhotoUrl(studentData?.profile_photo_url || "");
       if (studentData) {
         const [weeklyRes, dailyRes, achRes, annRes] = await Promise.all([
           supabase.from("weekly_reports").select("*").eq("student_id", studentData.id).order("pushed_at", { ascending: false }),
@@ -55,11 +70,24 @@ const StudentProfile = () => {
 
   const presentDays = dailyReports.filter((r) => r.attendance === "present").length;
 
+  const tabs: { key: Tab; label: string; icon: any }[] = [
+    { key: "overview", label: "Overview", icon: LayoutGrid },
+    { key: "journal", label: "Journal", icon: BookOpen },
+    { key: "goals", label: "Goals", icon: Target },
+    { key: "roadmap", label: "Belt Path", icon: Award },
+    { key: "library", label: "Techniques", icon: Library },
+    { key: "heatmap", label: "Attendance", icon: Activity },
+    { key: "leaderboard", label: "Leaderboard", icon: Trophy },
+    { key: "events", label: "Events", icon: CalendarCheck },
+    { key: "messages", label: "Messages", icon: MessageCircle },
+    { key: "badges", label: "Badges", icon: Award },
+  ];
+
   return (
     <Layout>
       <section className="py-8">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="flex items-center justify-between mb-8">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="flex items-center justify-between mb-6">
             <h1 className="font-heading text-3xl font-bold">MY <span className="text-gold-gradient">PROFILE</span></h1>
             <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground">
               <LogOut className="h-4 w-4 mr-1" /> Logout
@@ -67,19 +95,21 @@ const StudentProfile = () => {
           </div>
 
           {/* Profile Card */}
-          <div className="bg-card-gradient border border-border rounded-lg p-6 mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-primary/20 overflow-hidden flex items-center justify-center">
-                {student.profile_photo_url ? (
-                  <img src={student.profile_photo_url} alt={student.full_name} className="w-full h-full object-cover" />
-                ) : <User className="h-8 w-8 text-primary" />}
+          <div className="bg-card-gradient border border-border rounded-lg p-6 mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-20 h-20 rounded-full bg-primary/20 overflow-hidden flex items-center justify-center ring-2 ring-accent/40">
+                {photoUrl ? (
+                  <img src={photoUrl} alt={student.full_name} className="w-full h-full object-cover" />
+                ) : <User className="h-10 w-10 text-primary" />}
               </div>
-              <div>
-                <h2 className="font-heading text-2xl font-bold">{student.full_name}</h2>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-accent font-heading uppercase tracking-wider">Roll No: {student.roll_no || "—"}</p>
+                <h2 className="font-heading text-2xl font-bold truncate">{student.full_name}</h2>
                 <span className="text-xs px-3 py-1 rounded-full bg-accent/20 text-accent font-medium">{student.belt_level} Belt</span>
+                <div className="mt-2"><PhotoUpload studentId={student.id} currentUrl={photoUrl} onUpdate={setPhotoUrl} /></div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm pt-4 border-t border-border">
               <div><p className="text-muted-foreground text-xs">Father's Name</p><p className="font-medium">{student.father_name || "—"}</p></div>
               <div><p className="text-muted-foreground text-xs">Date of Birth</p><p className="font-medium">{student.date_of_birth || "—"}</p></div>
               <div><p className="text-muted-foreground text-xs">Date of Joining</p><p className="font-medium">{student.date_of_joining || "—"}</p></div>
@@ -88,93 +118,93 @@ const StudentProfile = () => {
             </div>
           </div>
 
-          {/* Announcements */}
-          {announcements.length > 0 && (
-            <div className="bg-card-gradient border border-accent/30 rounded-lg p-6 mb-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Megaphone className="h-5 w-5 text-accent" />
-                <h3 className="font-heading text-lg font-semibold">Announcements</h3>
-              </div>
-              <div className="flex flex-col gap-3">
-                {announcements.map((a) => (
-                  <div key={a.id} className="bg-secondary rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-accent/20 text-accent rounded">{a.target_batch}</span>
-                    </div>
-                    <p className="text-muted-foreground text-sm">{a.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{new Date(a.created_at).toLocaleDateString()}</p>
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1">
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setTab(t.key)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${
+                  tab === t.key ? "bg-accent text-accent-foreground border-accent" : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border"
+                }`}>
+                <t.icon className="h-3.5 w-3.5" /> {t.label}
+              </button>
+            ))}
+          </div>
+
+          {tab === "overview" && (
+            <div className="flex flex-col gap-6">
+              {announcements.length > 0 && (
+                <div className="bg-card-gradient border border-accent/30 rounded-lg p-5">
+                  <div className="flex items-center gap-2 mb-3"><Megaphone className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Announcements</h3></div>
+                  <div className="flex flex-col gap-2">
+                    {announcements.slice(0, 3).map((a) => (
+                      <div key={a.id} className="bg-secondary rounded-lg p-3">
+                        <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
+                        <p className="text-muted-foreground text-sm">{a.message}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-card-gradient border border-border rounded-lg p-4">
+                  <p className="text-xs text-muted-foreground">Recent Attendance</p>
+                  <p className="font-heading text-3xl text-accent">{presentDays}/{dailyReports.length}</p>
+                </div>
+                <div className="bg-card-gradient border border-border rounded-lg p-4">
+                  <p className="text-xs text-muted-foreground">Achievements</p>
+                  <p className="font-heading text-3xl text-accent">{achievements.length}</p>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-3"><FileText className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Weekly Reports</h3></div>
+                {weeklyReports.length === 0 ? <p className="text-muted-foreground text-sm">No reports yet.</p> : (
+                  <div className="flex flex-col gap-2">
+                    {weeklyReports.map((r) => (
+                      <div key={r.id} className="bg-card-gradient border border-border rounded-lg p-3 flex justify-between items-center">
+                        <p className="text-xs text-accent font-heading">{r.week_start} → {r.week_end}</p>
+                        <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={async () => {
+                          const { data: dailies } = await supabase.from("daily_reports").select("*")
+                            .eq("student_id", student.id).gte("date", r.week_start).lte("date", r.week_end).order("date");
+                          generateWeeklyReportPDF({ student, weekStart: r.week_start, weekEnd: r.week_end, summary: r.summary || "", dailyReports: dailies || [] });
+                        }}><FileDown className="h-3 w-3 mr-1" /> PDF</Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 mb-3"><Award className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Achievements</h3></div>
+                {achievements.length === 0 ? <p className="text-muted-foreground text-sm">No achievements yet.</p> : (
+                  <div className="flex flex-col gap-2">
+                    {achievements.map((a) => (
+                      <div key={a.id} className="bg-card-gradient border border-border rounded-lg p-3">
+                        <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
+                        <p className="text-muted-foreground text-xs">{a.description} {a.date && `• ${a.date}`}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Attendance */}
-          <div className="bg-card-gradient border border-border rounded-lg p-6 mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Calendar className="h-5 w-5 text-accent" />
-              <h3 className="font-heading text-lg font-semibold">Attendance (Last 30 entries)</h3>
+          {tab === "journal" && <TrainingJournal studentId={student.id} />}
+          {tab === "goals" && <GoalsTracker studentId={student.id} />}
+          {tab === "roadmap" && <BeltRoadmap currentBelt={student.belt_level} />}
+          {tab === "library" && <TechniqueLibrary />}
+          {tab === "heatmap" && <AttendanceHeatmap studentId={student.id} />}
+          {tab === "leaderboard" && <Leaderboard currentStudentId={student.id} />}
+          {tab === "events" && (
+            <div className="flex flex-col gap-6">
+              <EventRsvp studentId={student.id} />
+              <EventsCalendar canManage={false} />
             </div>
-            <div className="flex gap-6">
-              <div><span className="text-2xl font-heading font-bold text-accent">{presentDays}</span><span className="text-muted-foreground text-sm ml-1">Present</span></div>
-              <div><span className="text-2xl font-heading font-bold text-primary">{dailyReports.length - presentDays}</span><span className="text-muted-foreground text-sm ml-1">Absent</span></div>
-            </div>
-          </div>
-
-          {/* Weekly Reports */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="h-5 w-5 text-accent" />
-              <h3 className="font-heading text-lg font-semibold">Weekly Reports</h3>
-            </div>
-            {weeklyReports.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No weekly reports yet.</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {weeklyReports.map((r) => (
-                  <div key={r.id} className="bg-card-gradient border border-border rounded-lg p-4">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <p className="text-xs text-accent font-heading">{r.week_start} — {r.week_end}</p>
-                      <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={async () => {
-                        const { data: dailies } = await supabase.from("daily_reports").select("*")
-                          .eq("student_id", student.id).gte("date", r.week_start).lte("date", r.week_end).order("date");
-                        generateWeeklyReportPDF({ student, weekStart: r.week_start, weekEnd: r.week_end, summary: r.summary || "", dailyReports: dailies || [] });
-                      }}>
-                        <FileDown className="h-3 w-3 mr-1" /> PDF
-                      </Button>
-                    </div>
-                    <pre className="text-sm text-muted-foreground whitespace-pre-wrap font-body">{r.summary}</pre>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Academy Events */}
-          <div className="mb-8">
-            <EventsCalendar canManage={false} />
-          </div>
-
-          {/* Achievements */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Award className="h-5 w-5 text-accent" />
-              <h3 className="font-heading text-lg font-semibold">Achievements</h3>
-            </div>
-            {achievements.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Achievements will appear here once added by your Sensei.</p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {achievements.map((a) => (
-                  <div key={a.id} className="bg-card-gradient border border-border rounded-lg p-4">
-                    <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
-                    <p className="text-muted-foreground text-xs">{a.description} {a.date && `• ${a.date}`}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
+          {tab === "messages" && <MessageSensei studentId={student.id} />}
+          {tab === "badges" && <BadgesShelf studentId={student.id} attendance={presentDays} achievementsCount={achievements.length} />}
         </div>
       </section>
     </Layout>
