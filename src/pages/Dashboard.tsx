@@ -51,7 +51,7 @@ const Dashboard = () => {
   // Forms
   const [newStudent, setNewStudent] = useState({
     full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "",
-    father_name: "", weight_kg: "", contact_number: "", email: "", password: "student123"
+    father_name: "", weight_kg: "", contact_number: "", roll_no: ""
   });
   const [dailyReport, setDailyReport] = useState({
     attendance: "present", performance: "", skills_practiced: "", remarks: ""
@@ -65,7 +65,7 @@ const Dashboard = () => {
   // Edit student form
   const [editForm, setEditForm] = useState({
     full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "",
-    father_name: "", weight_kg: "", contact_number: ""
+    father_name: "", weight_kg: "", contact_number: "", roll_no: ""
   });
 
   const navigate = useNavigate();
@@ -113,9 +113,9 @@ const Dashboard = () => {
       });
       if (res.error) throw new Error(res.error.message);
       if (!res.data?.ok) throw new Error(res.data?.error || "Failed to create student");
-      toast.success("Student added!");
+      toast.success(`Student added! Roll No: ${res.data.roll_no}. Login with Roll No + DOB.`);
       setShowAddStudent(false);
-      setNewStudent({ full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "", father_name: "", weight_kg: "", contact_number: "", email: "", password: "student123" });
+      setNewStudent({ full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "", father_name: "", weight_kg: "", contact_number: "", roll_no: "" });
       await loadData();
     } catch (err: any) { toast.error(err.message); }
   };
@@ -317,12 +317,15 @@ const Dashboard = () => {
       father_name: student.father_name || "",
       weight_kg: student.weight_kg ? String(student.weight_kg) : "",
       contact_number: student.contact_number || "",
+      roll_no: student.roll_no || "",
     });
     setShowEditStudent(student);
   };
 
   const handleEditStudent = async () => {
     if (!showEditStudent) return;
+    const newRoll = editForm.roll_no.trim().toUpperCase();
+    const oldRoll = (showEditStudent.roll_no || "").toUpperCase();
     const { error } = await supabase.from("students").update({
       full_name: editForm.full_name,
       belt_level: editForm.belt_level,
@@ -331,8 +334,17 @@ const Dashboard = () => {
       father_name: editForm.father_name || null,
       weight_kg: editForm.weight_kg ? parseFloat(editForm.weight_kg) : null,
       contact_number: editForm.contact_number || null,
+      roll_no: newRoll || null,
     }).eq("id", showEditStudent.id);
     if (error) { toast.error(error.message); return; }
+    // If roll changed, also update the student's auth login email so they can log in with new roll
+    if (newRoll && newRoll !== oldRoll && showEditStudent.user_id) {
+      try {
+        await supabase.functions.invoke("update-student-roll", {
+          body: { user_id: showEditStudent.user_id, new_roll: newRoll },
+        });
+      } catch { /* non-fatal */ }
+    }
     toast.success("Student updated!");
     setShowEditStudent(null);
     setShowStudentDetail(null);
