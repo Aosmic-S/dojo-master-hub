@@ -734,14 +734,21 @@ const Dashboard = () => {
             <Modal onClose={() => setShowAddStudent(false)} title="Add New Student">
               <form onSubmit={handleAddStudent} className="flex flex-col gap-3">
                 <Input placeholder="Full Name *" value={newStudent.full_name} onChange={(e) => setNewStudent({ ...newStudent, full_name: e.target.value })} required className="bg-secondary border-border" />
-                <Input placeholder="Email (for login) *" type="email" value={newStudent.email} onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })} required className="bg-secondary border-border" />
-                <Input placeholder="Password *" value={newStudent.password} onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })} required className="bg-secondary border-border" />
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Roll No. * (used to login)</label>
+                  <Input placeholder="e.g. BJKA042" value={newStudent.roll_no} onChange={(e) => setNewStudent({ ...newStudent, roll_no: e.target.value.toUpperCase() })} required className="bg-secondary border-border uppercase" />
+                  <button type="button" onClick={() => {
+                    const nums = students.map(s => parseInt((s.roll_no || "").replace(/\D/g, ""), 10)).filter(n => !isNaN(n));
+                    const next = (nums.length ? Math.max(...nums) : 0) + 1;
+                    setNewStudent(p => ({ ...p, roll_no: `BJKA${String(next).padStart(3, "0")}` }));
+                  }} className="text-[11px] text-accent mt-1 hover:underline">Suggest next roll</button>
+                </div>
                 <select value={newStudent.belt_level} onChange={(e) => setNewStudent({ ...newStudent, belt_level: e.target.value })} className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground">
                   {BELT_LEVELS.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
                 <div>
-                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth</label>
-                  <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} className="bg-secondary border-border" />
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth * (used as password)</label>
+                  <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} required className="bg-secondary border-border" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Joining</label>
