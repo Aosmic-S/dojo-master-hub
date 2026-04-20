@@ -151,6 +151,30 @@ export type Database = {
         }
         Relationships: []
       }
+      belt_curriculum: {
+        Row: {
+          belt_level: string
+          created_at: string
+          display_order: number | null
+          id: string
+          requirement: string
+        }
+        Insert: {
+          belt_level: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          requirement: string
+        }
+        Update: {
+          belt_level?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          requirement?: string
+        }
+        Relationships: []
+      }
       daily_reports: {
         Row: {
           attendance: string
@@ -194,6 +218,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: []
       }
       fees: {
         Row: {
@@ -249,6 +297,117 @@ export type Database = {
         }
         Relationships: []
       }
+      student_badges: {
+        Row: {
+          awarded_at: string
+          badge_icon: string | null
+          badge_name: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_icon?: string | null
+          badge_name: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_icon?: string | null
+          badge_name?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      student_goals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_completed: boolean
+          student_id: string
+          target_date: string | null
+          title: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          student_id: string
+          target_date?: string | null
+          title: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          student_id?: string
+          target_date?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      student_messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          sender_role: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          sender_role: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          sender_role?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      student_notes: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          student_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          student_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          student_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           belt_level: string
@@ -260,6 +419,7 @@ export type Database = {
           full_name: string
           id: string
           profile_photo_url: string | null
+          roll_no: string | null
           updated_at: string
           user_id: string
           weight_kg: number | null
@@ -274,6 +434,7 @@ export type Database = {
           full_name: string
           id?: string
           profile_photo_url?: string | null
+          roll_no?: string | null
           updated_at?: string
           user_id: string
           weight_kg?: number | null
@@ -288,9 +449,40 @@ export type Database = {
           full_name?: string
           id?: string
           profile_photo_url?: string | null
+          roll_no?: string | null
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      technique_library: {
+        Row: {
+          belt_level: string | null
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          video_url: string | null
+        }
+        Insert: {
+          belt_level?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          video_url?: string | null
+        }
+        Update: {
+          belt_level?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          video_url?: string | null
         }
         Relationships: []
       }

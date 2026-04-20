@@ -51,7 +51,7 @@ const Dashboard = () => {
   // Forms
   const [newStudent, setNewStudent] = useState({
     full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "",
-    father_name: "", weight_kg: "", contact_number: "", email: "", password: "student123"
+    father_name: "", weight_kg: "", contact_number: "", roll_no: ""
   });
   const [dailyReport, setDailyReport] = useState({
     attendance: "present", performance: "", skills_practiced: "", remarks: ""
@@ -65,7 +65,7 @@ const Dashboard = () => {
   // Edit student form
   const [editForm, setEditForm] = useState({
     full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "",
-    father_name: "", weight_kg: "", contact_number: ""
+    father_name: "", weight_kg: "", contact_number: "", roll_no: ""
   });
 
   const navigate = useNavigate();
@@ -113,9 +113,9 @@ const Dashboard = () => {
       });
       if (res.error) throw new Error(res.error.message);
       if (!res.data?.ok) throw new Error(res.data?.error || "Failed to create student");
-      toast.success("Student added!");
+      toast.success(`Student added! Roll No: ${res.data.roll_no}. Login with Roll No + DOB.`);
       setShowAddStudent(false);
-      setNewStudent({ full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "", father_name: "", weight_kg: "", contact_number: "", email: "", password: "student123" });
+      setNewStudent({ full_name: "", belt_level: "White", date_of_birth: "", date_of_joining: "", father_name: "", weight_kg: "", contact_number: "", roll_no: "" });
       await loadData();
     } catch (err: any) { toast.error(err.message); }
   };
@@ -317,12 +317,15 @@ const Dashboard = () => {
       father_name: student.father_name || "",
       weight_kg: student.weight_kg ? String(student.weight_kg) : "",
       contact_number: student.contact_number || "",
+      roll_no: student.roll_no || "",
     });
     setShowEditStudent(student);
   };
 
   const handleEditStudent = async () => {
     if (!showEditStudent) return;
+    const newRoll = editForm.roll_no.trim().toUpperCase();
+    const oldRoll = (showEditStudent.roll_no || "").toUpperCase();
     const { error } = await supabase.from("students").update({
       full_name: editForm.full_name,
       belt_level: editForm.belt_level,
@@ -331,8 +334,17 @@ const Dashboard = () => {
       father_name: editForm.father_name || null,
       weight_kg: editForm.weight_kg ? parseFloat(editForm.weight_kg) : null,
       contact_number: editForm.contact_number || null,
+      roll_no: newRoll || null,
     }).eq("id", showEditStudent.id);
     if (error) { toast.error(error.message); return; }
+    // If roll changed, also update the student's auth login email so they can log in with new roll
+    if (newRoll && newRoll !== oldRoll && showEditStudent.user_id) {
+      try {
+        await supabase.functions.invoke("update-student-roll", {
+          body: { user_id: showEditStudent.user_id, new_roll: newRoll },
+        });
+      } catch { /* non-fatal */ }
+    }
     toast.success("Student updated!");
     setShowEditStudent(null);
     setShowStudentDetail(null);
@@ -344,7 +356,8 @@ const Dashboard = () => {
 
   const filteredStudents = students.filter((s) =>
     s.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    s.belt_level.toLowerCase().includes(search.toLowerCase())
+    s.belt_level.toLowerCase().includes(search.toLowerCase()) ||
+    (s.roll_no || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const beltDistribution = BELT_LEVELS.map((b) => ({
@@ -451,6 +464,7 @@ const Dashboard = () => {
                     <thead>
                       <tr className="border-b border-border text-left bg-secondary/30">
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Photo</th>
+                        <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-accent">Roll No</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Name</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground">Belt</th>
                         <th className="py-3 px-4 font-heading text-xs uppercase tracking-wider text-muted-foreground hidden md:table-cell">Contact</th>
@@ -468,6 +482,9 @@ const Dashboard = () => {
                                 <Camera className="h-4 w-4 text-muted-foreground" />
                               )}
                             </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-heading text-accent text-sm">{s.roll_no || "—"}</span>
                           </td>
                           <td className="py-3 px-4">
                             <button onClick={() => { setShowStudentDetail(s); loadStudentAchievements(s.id); }} className="font-heading font-semibold hover:text-accent transition-colors text-left">
@@ -722,14 +739,21 @@ const Dashboard = () => {
             <Modal onClose={() => setShowAddStudent(false)} title="Add New Student">
               <form onSubmit={handleAddStudent} className="flex flex-col gap-3">
                 <Input placeholder="Full Name *" value={newStudent.full_name} onChange={(e) => setNewStudent({ ...newStudent, full_name: e.target.value })} required className="bg-secondary border-border" />
-                <Input placeholder="Email (for login) *" type="email" value={newStudent.email} onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })} required className="bg-secondary border-border" />
-                <Input placeholder="Password *" value={newStudent.password} onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })} required className="bg-secondary border-border" />
+                <div>
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Roll No. * (used to login)</label>
+                  <Input placeholder="e.g. BJKA042" value={newStudent.roll_no} onChange={(e) => setNewStudent({ ...newStudent, roll_no: e.target.value.toUpperCase() })} required className="bg-secondary border-border uppercase" />
+                  <button type="button" onClick={() => {
+                    const nums = students.map(s => parseInt((s.roll_no || "").replace(/\D/g, ""), 10)).filter(n => !isNaN(n));
+                    const next = (nums.length ? Math.max(...nums) : 0) + 1;
+                    setNewStudent(p => ({ ...p, roll_no: `BJKA${String(next).padStart(3, "0")}` }));
+                  }} className="text-[11px] text-accent mt-1 hover:underline">Suggest next roll</button>
+                </div>
                 <select value={newStudent.belt_level} onChange={(e) => setNewStudent({ ...newStudent, belt_level: e.target.value })} className="bg-secondary border border-border rounded-md px-3 py-2 text-sm text-foreground">
                   {BELT_LEVELS.map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
                 <div>
-                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth</label>
-                  <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} className="bg-secondary border-border" />
+                  <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Birth * (used as password)</label>
+                  <Input type="date" value={newStudent.date_of_birth} onChange={(e) => setNewStudent({ ...newStudent, date_of_birth: e.target.value })} required className="bg-secondary border-border" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Date of Joining</label>
@@ -829,6 +853,11 @@ const Dashboard = () => {
           {showEditStudent && (
             <Modal onClose={() => setShowEditStudent(null)} title={`Edit: ${showEditStudent.full_name}`}>
               <div className="flex flex-col gap-3">
+                <div>
+                  <label className="text-xs text-accent font-heading uppercase tracking-wider mb-1 block">Roll No. (login ID)</label>
+                  <Input value={editForm.roll_no} onChange={(e) => setEditForm({ ...editForm, roll_no: e.target.value.toUpperCase() })} className="bg-secondary border-accent/50 uppercase font-heading" />
+                  <p className="text-[11px] text-muted-foreground mt-1">Changing this updates the student's login Roll No.</p>
+                </div>
                 <div>
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Full Name</label>
                   <Input value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} className="bg-secondary border-border" />
