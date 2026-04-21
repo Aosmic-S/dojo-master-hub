@@ -1008,6 +1008,10 @@ const Dashboard = () => {
             </Modal>
           )}
 
+          {showFormat && (
+            <FormatModal onClose={() => setShowFormat(false)} onDone={loadData} />
+          )}
+
         </div>
       </section>
     </Layout>
