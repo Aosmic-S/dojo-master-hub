@@ -369,6 +369,7 @@ const Dashboard = () => {
     { key: "students", label: "Students", icon: Users },
     { key: "analytics", label: "Analytics", icon: Activity },
     { key: "calendar", label: "Calendar", icon: Calendar },
+    { key: "messages", label: "Messages", icon: MessageCircle },
     { key: "achievements", label: "Achievements", icon: Award },
     { key: "gallery", label: "Gallery", icon: Image },
     { key: "timings", label: "Timings & Fees", icon: BarChart3 },
