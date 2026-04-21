@@ -6,18 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar } from "lucide-react";
+import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar, MessageCircle } from "lucide-react";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import AttendanceChart from "@/components/AttendanceChart";
 import EventsCalendar from "@/components/EventsCalendar";
+import AdminMessagesInbox from "@/components/admin/AdminMessagesInbox";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
-type Tab = "students" | "analytics" | "calendar" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
+type Tab = "students" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
 
 const Dashboard = () => {
   const { user, isReady } = useAuthReady();
@@ -368,6 +369,7 @@ const Dashboard = () => {
     { key: "students", label: "Students", icon: Users },
     { key: "analytics", label: "Analytics", icon: Activity },
     { key: "calendar", label: "Calendar", icon: Calendar },
+    { key: "messages", label: "Messages", icon: MessageCircle },
     { key: "achievements", label: "Achievements", icon: Award },
     { key: "gallery", label: "Gallery", icon: Image },
     { key: "timings", label: "Timings & Fees", icon: BarChart3 },
@@ -604,6 +606,8 @@ const Dashboard = () => {
 
           {/* ============ CALENDAR TAB ============ */}
           {activeTab === "calendar" && <EventsCalendar canManage={role === "admin"} />}
+
+          {activeTab === "messages" && <AdminMessagesInbox />}
 
           {/* ============ ACHIEVEMENTS TAB ============ */}
           {activeTab === "achievements" && (
