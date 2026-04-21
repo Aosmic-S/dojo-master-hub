@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar, MessageCircle } from "lucide-react";
+import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar, MessageCircle, RefreshCw, AlertTriangle } from "lucide-react";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import AttendanceChart from "@/components/AttendanceChart";
@@ -39,6 +39,8 @@ const Dashboard = () => {
   const [showEditTimings, setShowEditTimings] = useState(false);
   const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
   const [showPromoteStudent, setShowPromoteStudent] = useState<any>(null);
+  const [resyncing, setResyncing] = useState(false);
+  const [showFormat, setShowFormat] = useState(false);
 
   // Data
   const [academyAchievements, setAcademyAchievements] = useState<any[]>([]);
@@ -457,6 +459,30 @@ const Dashboard = () => {
                   </div>
                   <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90 h-11 px-5">
                     <Plus className="h-4 w-4 mr-1" /> Add Student
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Resync ALL students' login credentials to Roll No + DOB? This will reset every student's password to their date of birth.")) return;
+                      setResyncing(true);
+                      const { data, error } = await supabase.functions.invoke("resync-student-auth", { body: { all: true } });
+                      setResyncing(false);
+                      if (error) return toast.error(error.message);
+                      const failed = (data?.results || []).filter((r: any) => !r.ok);
+                      if (failed.length === 0) toast.success(`Resynced ${data?.count || 0} students`);
+                      else toast.warning(`Resynced ${data?.count - failed.length}/${data?.count}. ${failed.length} failed.`);
+                    }}
+                    disabled={resyncing}
+                    variant="outline"
+                    className="border-border h-11 px-4"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-1 ${resyncing ? "animate-spin" : ""}`} /> Resync All
+                  </Button>
+                  <Button
+                    onClick={() => setShowFormat(true)}
+                    variant="outline"
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 h-11 px-4"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-1" /> Format
                   </Button>
                 </div>
 
@@ -982,6 +1008,10 @@ const Dashboard = () => {
             </Modal>
           )}
 
+          {showFormat && (
+            <FormatModal onClose={() => setShowFormat(false)} onDone={loadData} />
+          )}
+
         </div>
       </section>
     </Layout>
@@ -1095,6 +1125,132 @@ const EditableFee = ({ fee, onSave }: { fee: any; onSave: (id: string, plan: str
       <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note" className="bg-background border-border" />
       <Button size="sm" onClick={() => { onSave(fee.id, plan, price, note); setEditing(false); }} className="bg-accent text-accent-foreground font-heading">Save</Button>
     </div>
+  );
+};
+
+const FORMAT_TARGETS: { key: string; label: string; table: string; description: string }[] = [
+  { key: "daily_reports", label: "Daily Reports", table: "daily_reports", description: "All daily attendance & performance entries." },
+  { key: "weekly_reports", label: "Weekly Reports", table: "weekly_reports", description: "All compiled weekly reports." },
+  { key: "achievements", label: "Student Achievements", table: "achievements", description: "Per-student achievements." },
+  { key: "student_badges", label: "Student Badges", table: "student_badges", description: "All awarded badges." },
+  { key: "student_goals", label: "Student Goals", table: "student_goals", description: "All goals set by/for students." },
+  { key: "student_notes", label: "Training Journals", table: "student_notes", description: "All student journal entries." },
+  { key: "student_messages", label: "Messages", table: "student_messages", description: "All student ↔ sensei messages." },
+  { key: "event_rsvps", label: "Event RSVPs", table: "event_rsvps", description: "All RSVP responses." },
+  { key: "academy_events", label: "Academy Events", table: "academy_events", description: "All scheduled calendar events." },
+  { key: "announcements", label: "Announcements", table: "announcements", description: "All posted announcements." },
+  { key: "gallery_photos", label: "Gallery Photos", table: "gallery_photos", description: "All gallery image entries (storage files NOT deleted)." },
+  { key: "academy_achievements", label: "Academy Achievements", table: "academy_achievements", description: "All academy-wide milestones." },
+];
+
+const FORMAT_SECURITY_CODE = "BJKA-RESET-2026";
+
+const FormatModal = ({ onClose, onDone }: { onClose: () => void; onDone: () => void }) => {
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [confirmText, setConfirmText] = useState("");
+  const [securityCode, setSecurityCode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const toggle = (key: string) => setSelected((s) => ({ ...s, [key]: !s[key] }));
+  const selectedKeys = Object.keys(selected).filter((k) => selected[k]);
+  const ready = selectedKeys.length > 0 && confirmText === "FORMAT" && securityCode === FORMAT_SECURITY_CODE;
+
+  const runFormat = async () => {
+    if (!ready) return;
+    setBusy(true);
+    const results: { label: string; ok: boolean; error?: string }[] = [];
+    for (const key of selectedKeys) {
+      const target = FORMAT_TARGETS.find((t) => t.key === key)!;
+      const { error } = await supabase
+        .from(target.table as any)
+        .delete()
+        .not("id", "is", null);
+      results.push({ label: target.label, ok: !error, error: error?.message });
+    }
+    setBusy(false);
+    const failed = results.filter((r) => !r.ok);
+    if (failed.length === 0) toast.success(`Formatted ${results.length} dataset(s)`);
+    else toast.error(`${failed.length} failed: ${failed.map((f) => f.label).join(", ")}`);
+    onDone();
+    onClose();
+  };
+
+  return (
+    <Modal onClose={onClose} title="⚠️ Format Data">
+      <div className="flex flex-col gap-4">
+        <div className="bg-destructive/10 border border-destructive/40 rounded-lg p-3">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-heading font-semibold text-destructive mb-1">DESTRUCTIVE ACTION — CANNOT BE UNDONE</p>
+              <p className="text-muted-foreground text-xs">
+                Selected datasets will be <b>permanently deleted</b> from the database. Student accounts, profiles, roles, fees, timings, belt curriculum, and the technique library are <b>never</b> touched by this tool.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p className="font-heading text-sm font-semibold mb-2">Choose what to format</p>
+          <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto">
+            {FORMAT_TARGETS.map((t) => (
+              <label key={t.key} className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${selected[t.key] ? "border-destructive/60 bg-destructive/5" : "border-border hover:bg-secondary"}`}>
+                <input
+                  type="checkbox"
+                  checked={!!selected[t.key]}
+                  onChange={() => toggle(t.key)}
+                  className="mt-1 accent-destructive"
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-heading">{t.label}</p>
+                  <p className="text-[11px] text-muted-foreground">{t.description}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2 mt-2">
+            <Button size="sm" variant="outline" onClick={() => setSelected(Object.fromEntries(FORMAT_TARGETS.map((t) => [t.key, true])))} className="text-xs h-8 border-border">Select all</Button>
+            <Button size="sm" variant="outline" onClick={() => setSelected({})} className="text-xs h-8 border-border">Clear</Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-heading uppercase tracking-wider text-muted-foreground">
+            Type <span className="text-destructive font-bold">FORMAT</span> to confirm
+          </label>
+          <Input
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+            placeholder="FORMAT"
+            className="bg-secondary border-border"
+          />
+          <label className="text-xs font-heading uppercase tracking-wider text-muted-foreground mt-1">
+            Security code
+          </label>
+          <Input
+            type="password"
+            value={securityCode}
+            onChange={(e) => setSecurityCode(e.target.value)}
+            placeholder="Enter security code"
+            className="bg-secondary border-border"
+          />
+          <p className="text-[10px] text-muted-foreground">
+            Default code: <code className="bg-secondary px-1 rounded">{FORMAT_SECURITY_CODE}</code>
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <Button
+            disabled={!ready || busy}
+            onClick={runFormat}
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-heading flex-1"
+          >
+            {busy ? "Formatting..." : `Format ${selectedKeys.length} dataset(s)`}
+          </Button>
+          <Button variant="outline" onClick={onClose} className="border-border">Cancel</Button>
+        </div>
+      </div>
+    </Modal>
   );
 };
 
