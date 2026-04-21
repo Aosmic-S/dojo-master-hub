@@ -607,6 +607,8 @@ const Dashboard = () => {
           {/* ============ CALENDAR TAB ============ */}
           {activeTab === "calendar" && <EventsCalendar canManage={role === "admin"} />}
 
+          {activeTab === "messages" && <AdminMessagesInbox />}
+
           {/* ============ ACHIEVEMENTS TAB ============ */}
           {activeTab === "achievements" && (
             <div>
