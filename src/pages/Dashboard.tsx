@@ -460,6 +460,30 @@ const Dashboard = () => {
                   <Button onClick={() => setShowAddStudent(true)} className="bg-accent text-accent-foreground font-heading hover:bg-accent/90 h-11 px-5">
                     <Plus className="h-4 w-4 mr-1" /> Add Student
                   </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!confirm("Resync ALL students' login credentials to Roll No + DOB? This will reset every student's password to their date of birth.")) return;
+                      setResyncing(true);
+                      const { data, error } = await supabase.functions.invoke("resync-student-auth", { body: { all: true } });
+                      setResyncing(false);
+                      if (error) return toast.error(error.message);
+                      const failed = (data?.results || []).filter((r: any) => !r.ok);
+                      if (failed.length === 0) toast.success(`Resynced ${data?.count || 0} students`);
+                      else toast.warning(`Resynced ${data?.count - failed.length}/${data?.count}. ${failed.length} failed.`);
+                    }}
+                    disabled={resyncing}
+                    variant="outline"
+                    className="border-border h-11 px-4"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-1 ${resyncing ? "animate-spin" : ""}`} /> Resync All
+                  </Button>
+                  <Button
+                    onClick={() => setShowFormat(true)}
+                    variant="outline"
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 h-11 px-4"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-1" /> Format
+                  </Button>
                 </div>
 
                 {/* Students Table */}
