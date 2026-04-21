@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar, MessageCircle } from "lucide-react";
+import { LogOut, Plus, Search, Users, Award, BarChart3, X, Trash2, Edit, Image, Shield, Camera, Megaphone, Settings, Save, FileDown, TrendingUp, Activity, Calendar, MessageCircle, RefreshCw, AlertTriangle } from "lucide-react";
 import { generateWeeklyReportPDF } from "@/lib/weeklyReportPdf";
 import { useAuthReady } from "@/hooks/useAuthReady";
 import AttendanceChart from "@/components/AttendanceChart";
@@ -39,6 +39,8 @@ const Dashboard = () => {
   const [showEditTimings, setShowEditTimings] = useState(false);
   const [showAddAnnouncement, setShowAddAnnouncement] = useState(false);
   const [showPromoteStudent, setShowPromoteStudent] = useState<any>(null);
+  const [resyncing, setResyncing] = useState(false);
+  const [showFormat, setShowFormat] = useState(false);
 
   // Data
   const [academyAchievements, setAcademyAchievements] = useState<any[]>([]);
