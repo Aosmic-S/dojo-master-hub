@@ -52,7 +52,7 @@ const Index = () => {
                 {isAdmin ? "Sensei Console" : "Welcome back, Karateka"}
               </p>
               <h1 className="font-heading text-5xl sm:text-7xl font-bold leading-none mb-6 animate-fade-in">
-                OSU, <span className="text-gold-gradient">{isAdmin ? "SENSEI" : (name.split(" ")[0] || "STUDENT").toUpperCase()}</span>
+                OSS, <span className="text-gold-gradient">{isAdmin ? "SENSEI" : (name.split(" ")[0] || "STUDENT").toUpperCase()}</span>
               </h1>
               <p className="text-muted-foreground text-lg max-w-md mb-8 animate-fade-in" style={{ animationDelay: "0.2s" }}>
                 {isAdmin ? "Manage students, reports, fees and events from your dashboard." : "Check your training, attendance, fees and announcements in your profile."}
