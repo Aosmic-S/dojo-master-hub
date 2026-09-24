@@ -47,9 +47,9 @@ const Index = () => (
     <section className="bg-secondary py-16">
       <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
         {[
-          { icon: Users, label: "Students Trained", value: "500+" },
-          { icon: Award, label: "Championships Won", value: "120+" },
-          { icon: Shield, label: "Years of Excellence", value: "10+" },
+          { icon: Users, label: "Students Trained", value: "50+" },
+          { icon: Award, label: "Championships Won", value: "10+" },
+          { icon: Shield, label: "Years of Excellence", value: "1+" },
         ].map((s) => (
           <div key={s.label} className="flex flex-col items-center gap-2">
             <s.icon className="h-8 w-8 text-accent" />
