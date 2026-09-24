@@ -1,10 +1,10 @@
-import wkf from "@/assets/affiliation-wkf.jpg";
-import kio from "@/assets/affiliation-kio.jpg";
-import ckf from "@/assets/affiliation-ckf.jpg";
-import oca from "@/assets/affiliation-oca.jpg";
-import ioc from "@/assets/affiliation-ioc.jpg";
-import uka from "@/assets/affiliation-uka.jpg";
-import shitokai from "@/assets/affiliation-shitokai.jpg";
+import wkf from "@/assets/affiliation-wkf.webp";
+import kio from "@/assets/affiliation-kio.webp";
+import ckf from "@/assets/affiliation-ckf.webp";
+import oca from "@/assets/affiliation-oca.webp";
+import ioc from "@/assets/affiliation-ioc.webp";
+import uka from "@/assets/affiliation-uka.webp";
+import shitokai from "@/assets/affiliation-shitokai.webp";
 
 const AFFILIATIONS = [
   { src: wkf, label: "World Karate Federation" },
@@ -13,7 +13,7 @@ const AFFILIATIONS = [
   { src: oca, label: "Olympic Council of Asia" },
   { src: ioc, label: "International Olympic Committee" },
   { src: uka, label: "Uttarakhand Karate Association" },
-  { src: shitokai, label: "Shito-Ryu Shitokai International" },
+  { src: shitokai, label: "Okinawa Goju-Ryu Karate-Do" },
 ];
 
 const AffiliationsStrip = () => (

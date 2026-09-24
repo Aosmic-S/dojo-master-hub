@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Award, Users, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBg from "@/assets/hero-bg.webp";
 import AffiliationsStrip from "@/components/AffiliationsStrip";
 
 const Index = () => (
