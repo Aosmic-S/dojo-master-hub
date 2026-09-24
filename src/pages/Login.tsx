@@ -85,7 +85,7 @@ const Login = () => {
               <div>
                 <label className="text-xs text-muted-foreground font-heading uppercase tracking-wider mb-1 block">Roll No.</label>
                 <Input
-                  placeholder="e.g. BJKA001"
+                  placeholder="e.g. RJA001"
                   value={rollNo}
                   onChange={(e) => setRollNo(e.target.value)}
                   className="bg-secondary border-border uppercase"
