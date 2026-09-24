@@ -103,3 +103,12 @@
   main > * { animation: fade-in .5s ease-out both; }
   @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } .float-slow { animation: none; } }
 }
+@layer utilities {
+  main h1 { animation: fade-in .7s ease-out both; }
+  main .grid > * { animation: fade-in .6s ease-out both; }
+  main .grid > *:nth-child(2) { animation-delay: .08s } main .grid > *:nth-child(3) { animation-delay: .16s }
+  main .grid > *:nth-child(4) { animation-delay: .24s } main .grid > *:nth-child(5) { animation-delay: .32s }
+  main .grid > *:nth-child(n+6) { animation-delay: .4s }
+  main .bg-card-gradient { transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease; }
+  main .bg-card-gradient:hover { transform: translateY(-4px); box-shadow: 0 14px 30px -14px hsl(var(--accent) / .35); }
+}
