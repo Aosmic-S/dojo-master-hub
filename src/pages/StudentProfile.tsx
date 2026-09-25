@@ -17,8 +17,9 @@ import MessageSensei from "@/components/student/MessageSensei";
 import EventRsvp from "@/components/student/EventRsvp";
 import BadgesShelf from "@/components/student/BadgesShelf";
 import PhotoUpload from "@/components/student/PhotoUpload";
+import StudentFees from "@/components/student/StudentFees";
 
-type Tab = "overview" | "journal" | "goals" | "roadmap" | "library" | "heatmap" | "leaderboard" | "messages" | "events" | "badges";
+type Tab = "overview" | "journal" | "goals" | "roadmap" | "library" | "heatmap" | "leaderboard" | "messages" | "events" | "badges" | "fees";
 
 const StudentProfile = () => {
   const [student, setStudent] = useState<any>(null);
@@ -81,6 +82,7 @@ const StudentProfile = () => {
     { key: "events", label: "Events", icon: CalendarCheck },
     { key: "messages", label: "Messages", icon: MessageCircle },
     { key: "badges", label: "Badges", icon: Award },
+    { key: "fees", label: "Fees", icon: FileText },
   ];
 
   return (
@@ -204,6 +206,7 @@ const StudentProfile = () => {
             </div>
           )}
           {tab === "messages" && <MessageSensei studentId={student.id} />}
+          {tab === "fees" && <StudentFees studentId={student.id} />}
           {tab === "badges" && <BadgesShelf studentId={student.id} attendance={presentDays} achievementsCount={achievements.length} />}
         </div>
       </section>
