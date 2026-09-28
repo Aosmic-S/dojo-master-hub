@@ -18,6 +18,8 @@ import EventRsvp from "@/components/student/EventRsvp";
 import BadgesShelf from "@/components/student/BadgesShelf";
 import PhotoUpload from "@/components/student/PhotoUpload";
 import StudentFees from "@/components/student/StudentFees";
+import { Counter } from "@/components/Reveal";
+import { Progress } from "@/components/ui/progress";
 
 type Tab = "overview" | "journal" | "goals" | "roadmap" | "library" | "heatmap" | "leaderboard" | "messages" | "events" | "badges" | "fees";
 
@@ -70,6 +72,10 @@ const StudentProfile = () => {
   if (!student) return <Layout><div className="flex items-center justify-center min-h-[60vh] text-muted-foreground">Profile not found.</div></Layout>;
 
   const presentDays = dailyReports.filter((r) => r.attendance === "present").length;
+
+  const attPct = dailyReports.length ? Math.round((presentDays / dailyReports.length) * 100) : 0;
+  let streak = 0;
+  for (const r of dailyReports) { if (r.attendance === "present") streak++; else break; }
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
     { key: "overview", label: "Overview", icon: LayoutGrid },
@@ -124,8 +130,8 @@ const StudentProfile = () => {
           <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${
-                  tab === t.key ? "bg-accent text-accent-foreground border-accent" : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border"
+                className={`flex items-center gap-2 px-4 py-2.5 min-h-[40px] rounded-md text-sm font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${
+                  tab === t.key ? "bg-accent text-accent-foreground border-accent shadow-[0_0_16px_-6px_hsl(var(--accent))]" : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border"
                 }`}>
                 <t.icon className="h-3.5 w-3.5" /> {t.label}
               </button>
@@ -148,15 +154,22 @@ const StudentProfile = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-card-gradient border border-border rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground">Recent Attendance</p>
-                  <p className="font-heading text-3xl text-accent">{presentDays}/{dailyReports.length}</p>
-                </div>
-                <div className="bg-card-gradient border border-border rounded-lg p-4">
-                  <p className="text-xs text-muted-foreground">Achievements</p>
-                  <p className="font-heading text-3xl text-accent">{achievements.length}</p>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { l: "Belt", v: null, t: student.belt_level },
+                  { l: "Attendance (30d)", v: presentDays, s: `/${dailyReports.length}` },
+                  { l: "Current streak", v: streak, s: " days" },
+                  { l: "Achievements", v: achievements.length },
+                ].map((m) => (
+                  <div key={m.l} className="panel p-4">
+                    <p className="eyebrow mb-1">{m.l}</p>
+                    <p className="font-heading text-4xl leading-none">{m.v === null ? m.t : <><Counter value={m.v as number} /><span className="text-lg text-muted-foreground">{m.s}</span></>}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="panel p-4">
+                <div className="flex justify-between mb-2"><p className="eyebrow">Attendance rate</p><p className="text-sm text-accent font-semibold">{attPct}%</p></div>
+                <Progress value={attPct} />
               </div>
 
               <div>
@@ -182,7 +195,7 @@ const StudentProfile = () => {
                 {achievements.length === 0 ? <p className="text-muted-foreground text-sm">No achievements yet.</p> : (
                   <div className="flex flex-col gap-2">
                     {achievements.map((a) => (
-                      <div key={a.id} className="bg-card-gradient border border-border rounded-lg p-3">
+                      <div key={a.id} className="unlock bg-card-gradient border border-border rounded-lg p-3">
                         <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
                         <p className="text-muted-foreground text-xs">{a.description} {a.date && `• ${a.date}`}</p>
                       </div>

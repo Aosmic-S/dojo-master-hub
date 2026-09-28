@@ -15,7 +15,7 @@ const BottomBar = () => {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       setAccount(roles?.some((r) => r.role === "admin")
         ? { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard }
-        : { to: "/profile", label: "Profile", icon: User });
+        : { to: "/student-profile", label: "Profile", icon: User });
     });
   }, []);
   const items = [
