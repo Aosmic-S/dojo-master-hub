@@ -31,7 +31,7 @@ const Footer = () => (
         <div>
           <h4 className="font-heading text-sm uppercase tracking-wider text-accent mb-3">Affiliations</h4>
           <div className="flex flex-wrap gap-2">
-            {["WKF", "KIO", "CKF", "OCA", "IOC", "UKA", "Shitokai"].map((a) => (
+            {["WKF", "KIO", "CKF", "OCA", "IOC", "UKA", "Goju-Ryu"].map((a) => (
               <span key={a} className="text-xs px-2 py-1 rounded bg-muted text-muted-foreground border border-border">
                 {a}
               </span>
