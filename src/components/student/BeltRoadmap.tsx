@@ -1,4 +1,6 @@
-import { Award } from "lucide-react";
+import { useState } from "react";
+import { Award, Check, Lock } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 const BELTS = [
   { name: "White", color: "bg-white", focus: "Foundations: Stances, basic blocks, Heian Shodan kata" },
@@ -17,29 +19,44 @@ const BELTS = [
 
 const BeltRoadmap = ({ currentBelt }: { currentBelt: string }) => {
   const currentIdx = BELTS.findIndex(b => b.name === currentBelt);
+  const [selected, setSelected] = useState(Math.max(currentIdx, 0));
+  const pct = currentIdx < 0 ? 0 : Math.round(((currentIdx + 1) / BELTS.length) * 100);
+  const sel = BELTS[selected];
+  const selState = selected < currentIdx ? "Completed" : selected === currentIdx ? "Current belt" : "Upcoming";
+
   return (
-    <div className="bg-card-gradient border border-border rounded-lg p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <Award className="h-5 w-5 text-accent" />
-        <h3 className="font-heading text-lg font-semibold">Belt Progression Roadmap</h3>
+    <div className="panel p-5">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Award className="h-5 w-5 text-accent" />
+          <h3 className="font-heading text-2xl">Belt Path</h3>
+        </div>
+        <span className="eyebrow">{currentIdx + 1} / {BELTS.length}</span>
       </div>
-      <div className="relative pl-8">
-        <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-border" />
+      <Progress value={pct} className="mb-5" />
+
+      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-5">
         {BELTS.map((b, i) => {
-          const isCurrent = i === currentIdx;
-          const isPast = i < currentIdx;
+          const isCurrent = i === currentIdx, isPast = i < currentIdx, isSel = i === selected;
           return (
-            <div key={b.name} className="relative pb-4 last:pb-0">
-              <div className={`absolute -left-[22px] top-1 w-4 h-4 rounded-full border-2 ${b.color} ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-card scale-125" : ""} ${isPast ? "border-accent" : "border-border"}`} />
-              <div className={`${isCurrent ? "bg-accent/10 border border-accent rounded-lg p-3" : ""}`}>
-                <p className={`font-heading text-sm ${isCurrent ? "text-accent font-bold" : isPast ? "text-muted-foreground line-through" : "font-semibold"}`}>
-                  {b.name} {isCurrent && "← You are here"}
-                </p>
-                <p className="text-xs text-muted-foreground">{b.focus}</p>
-              </div>
-            </div>
+            <button key={b.name} onClick={() => setSelected(i)} aria-label={b.name}
+              className={`relative rounded-md border p-2 min-h-[56px] flex flex-col items-center justify-center gap-1 transition-all
+                ${isSel ? "border-accent bg-accent/10" : "border-border hover:border-accent/50"}
+                ${isCurrent ? "ring-1 ring-accent shadow-[0_0_18px_-4px_hsl(var(--accent)/.6)]" : ""}
+                ${!isPast && !isCurrent ? "opacity-60" : ""}`}>
+              <span className={`h-2.5 w-full rounded-sm border border-border ${b.color}`} />
+              <span className="text-[10px] leading-tight text-center text-muted-foreground">{b.name.replace(" Kyu", "").replace(" Dan", "")}</span>
+              {isPast && <Check className="absolute top-1 right-1 h-3 w-3 text-accent" />}
+              {!isPast && !isCurrent && <Lock className="absolute top-1 right-1 h-2.5 w-2.5 text-muted-foreground" />}
+            </button>
           );
         })}
+      </div>
+
+      <div key={selected} className="animate-fade-in rounded-md border border-border bg-secondary/40 p-4">
+        <p className="eyebrow mb-1">{selState}</p>
+        <p className="font-heading text-2xl">{sel.name} Belt</p>
+        <p className="text-sm text-muted-foreground">{sel.focus}</p>
       </div>
     </div>
   );
