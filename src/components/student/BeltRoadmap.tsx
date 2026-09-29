@@ -9,6 +9,7 @@ const BELTS = [
   { name: "Green", color: "bg-green-500", focus: "Roundhouse kick, sparring basics, Heian Yondan" },
   { name: "Blue", color: "bg-blue-500", focus: "Hook kick, advanced kata, Heian Godan" },
   { name: "Purple", color: "bg-purple-500", focus: "Combination techniques, Tekki Shodan" },
+  { name: "Brown 4th Kyu", color: "bg-amber-700", focus: "Advanced combinations, sparring drills" },
   { name: "Brown 3rd Kyu", color: "bg-amber-700", focus: "Bassai Dai, free sparring" },
   { name: "Brown 2nd Kyu", color: "bg-amber-700", focus: "Kanku Dai, board breaking" },
   { name: "Brown 1st Kyu", color: "bg-amber-700", focus: "Empi, advanced sparring" },

@@ -15,7 +15,7 @@ import AdminMessagesInbox from "@/components/admin/AdminMessagesInbox";
 import AdminFees from "@/components/admin/AdminFees";
 
 const BELT_LEVELS = [
-  "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 3rd Kyu",
+  "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 4th Kyu", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
