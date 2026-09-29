@@ -127,10 +127,10 @@ const StudentProfile = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-1 px-1">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2 mb-6">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`flex items-center gap-2 px-4 py-2.5 min-h-[40px] rounded-md text-sm font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${
+                className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 px-2 lg:px-4 py-2.5 min-h-[56px] lg:min-h-[40px] rounded-lg text-[11px] sm:text-xs lg:text-sm font-heading uppercase tracking-wide text-center leading-tight transition-all border ${
                   tab === t.key ? "bg-accent text-accent-foreground border-accent shadow-[0_0_16px_-6px_hsl(var(--accent))]" : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border"
                 }`}>
                 <t.icon className="h-3.5 w-3.5" /> {t.label}
