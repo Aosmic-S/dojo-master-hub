@@ -414,10 +414,10 @@ const Dashboard = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mb-8 overflow-x-auto pb-2 -mx-1 px-1">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2 mb-8">
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-heading uppercase tracking-wide whitespace-nowrap transition-all border ${activeTab === t.key
+                className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 px-2 lg:px-4 py-2.5 min-h-[56px] lg:min-h-[40px] rounded-lg lg:rounded-full text-[11px] sm:text-xs lg:text-sm font-heading uppercase tracking-wide text-center leading-tight transition-all border ${activeTab === t.key
                   ? "bg-accent text-accent-foreground border-accent gold-glow"
                   : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border hover:border-accent/50"}`}>
                 <t.icon className="h-4 w-4" /> {t.label}
