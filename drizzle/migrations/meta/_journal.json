@@ -8,6 +8,13 @@
       "when": 1790240100473,
       "tag": "0000_student_fee_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790752594067,
+      "tag": "0001_student_photo_upload",
+      "breakpoints": true
     }
   ]
 }

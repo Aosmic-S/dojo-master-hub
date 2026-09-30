@@ -99,7 +99,7 @@ const Dashboard = () => {
       setAdminEmail(user.email || "");
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       if (cancelled) return;
-      const userRole = roles?.[0]?.role || "student";
+      const userRole = roles?.some((r) => r.role === "admin") ? "admin" : "student";
       setRole(userRole);
       if (userRole === "admin") await loadData();
       if (!cancelled) setLoading(false);

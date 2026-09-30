@@ -622,6 +622,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      set_my_profile_photo: { Args: { _url: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "student"

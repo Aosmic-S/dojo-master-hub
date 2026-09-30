@@ -10,7 +10,12 @@ const PhotoUpload = ({ studentId, currentUrl, onUpdate }: { studentId: string; c
     if (upErr) return toast.error(upErr.message);
     const { data: urlData } = supabase.storage.from("profile-photos").getPublicUrl(path);
     const cacheBust = `${urlData.publicUrl}?t=${Date.now()}`;
-    const { error } = await supabase.from("students").update({ profile_photo_url: urlData.publicUrl }).eq("id", studentId);
+    const { data: s } = await supabase.auth.getUser();
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", s.user?.id ?? "");
+    const isAdmin = !!roles?.some((r) => r.role === "admin");
+    const { error } = isAdmin
+      ? await supabase.from("students").update({ profile_photo_url: urlData.publicUrl }).eq("id", studentId)
+      : await (supabase.rpc as any)("set_my_profile_photo", { _url: urlData.publicUrl });
     if (error) return toast.error(error.message);
     toast.success("Photo updated!");
     onUpdate(cacheBust);
