@@ -99,7 +99,7 @@ const Dashboard = () => {
       setAdminEmail(user.email || "");
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       if (cancelled) return;
-      const userRole = roles?.[0]?.role || "student";
+      const userRole = roles?.some((r) => r.role === "admin") ? "admin" : "student";
       setRole(userRole);
       if (userRole === "admin") await loadData();
       if (!cancelled) setLoading(false);
@@ -306,7 +306,7 @@ const Dashboard = () => {
 
   // Promote student to admin
   const promoteToAdmin = async (studentUserId: string) => {
-    const { error } = await supabase.from("user_roles").insert({ user_id: studentUserId, role: "admin" });
+    const { error } = await supabase.from("user_roles").upsert({ user_id: studentUserId, role: "admin" }, { onConflict: "user_id,role", ignoreDuplicates: true });
     if (error) toast.error(error.message);
     else { toast.success("Promoted to admin!"); setShowPromoteStudent(null); }
   };
