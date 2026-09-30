@@ -13,13 +13,14 @@ import AttendanceChart from "@/components/AttendanceChart";
 import EventsCalendar from "@/components/EventsCalendar";
 import AdminMessagesInbox from "@/components/admin/AdminMessagesInbox";
 import AdminFees from "@/components/admin/AdminFees";
+import SenseiOverview from "@/components/admin/SenseiOverview";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 4th Kyu", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
-type Tab = "students" | "fees" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
+type Tab = "overview" | "students" | "fees" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
 
 const Dashboard = () => {
   const { user, isReady } = useAuthReady();
@@ -27,7 +28,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<Tab>("students");
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   // Modals
   const [showAddStudent, setShowAddStudent] = useState(false);
@@ -369,6 +370,7 @@ const Dashboard = () => {
   })).filter((b) => b.count > 0);
 
   const tabs: { key: Tab; label: string; icon: any }[] = [
+    { key: "overview", label: "Overview", icon: TrendingUp },
     { key: "students", label: "Students", icon: Users },
     { key: "analytics", label: "Analytics", icon: Activity },
     { key: "calendar", label: "Calendar", icon: Calendar },
@@ -424,6 +426,8 @@ const Dashboard = () => {
               </button>
             ))}
           </div>
+
+          {activeTab === "overview" && <SenseiOverview students={students} onNavigate={setActiveTab} />}
 
           {/* ============ STUDENTS TAB ============ */}
           {activeTab === "students" && (
