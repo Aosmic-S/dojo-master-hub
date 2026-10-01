@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { Activity, Award, BarChart3, Calendar, ChevronRight, Image, IndianRupee, LayoutDashboard, Megaphone, Menu, MessageCircle, Settings, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -65,10 +66,10 @@ export function SenseiNavigation({ activeTab, onNavigate }: { activeTab: SenseiT
         </Button>
       </div>
       <aside aria-label="Dashboard sections" className="hidden lg:block w-52 xl:w-56 shrink-0 sticky top-24 self-start border-r border-border pr-4 pb-8">{list}</aside>
-      {open && (
+      {open && createPortal((
         <div className="lg:hidden fixed inset-0 z-[60]">
           <div className="absolute inset-0 bg-background/80" onClick={() => setOpen(false)} aria-hidden="true" />
-          <aside aria-label="Dashboard sections" className="absolute top-0 bottom-0 left-0 w-[min(85vw,320px)] overflow-y-auto bg-card border-r border-border p-5 shadow-xl animate-fade-in">
+          <aside aria-label="Dashboard sections" className="absolute top-0 bottom-0 left-0 w-[min(85vw,320px)] overflow-y-auto bg-card border-r border-border p-5 shadow-xl">
             <div className="flex items-center justify-between mb-7">
               <div><p className="text-[10px] text-accent font-semibold uppercase tracking-widest">Raja Janak Academy</p><h2 className="font-heading text-2xl">Sensei Console</h2></div>
               <Button type="button" variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close dashboard sections"><X className="h-5 w-5" /></Button>
@@ -76,7 +77,7 @@ export function SenseiNavigation({ activeTab, onNavigate }: { activeTab: SenseiT
             {list}
           </aside>
         </div>
-      )}
+      ), document.body)}
     </>
   );
 }

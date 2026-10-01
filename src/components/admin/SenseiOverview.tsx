@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Counter } from "@/components/Reveal";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { Users, Activity, IndianRupee, MessageCircle, Calendar, Award, UserPlus, ArrowRight } from "lucide-react";
 
 type Go = (tab: any) => void;
@@ -75,17 +76,17 @@ const SenseiOverview = ({ students, onNavigate }: { students: any[]; onNavigate:
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {kpis.map((k) => (
-          <button key={k.label} onClick={() => onNavigate(k.tab)}
-            className="panel p-4 sm:p-5 text-left group hover:border-accent/50 transition-colors min-w-0">
+          <Button key={k.label} variant="ghost" onClick={() => onNavigate(k.tab)}
+            className="panel h-auto flex-col items-stretch whitespace-normal p-4 sm:p-5 text-left group hover:border-accent/50 transition-colors min-w-0">
             <div className="flex items-center justify-between mb-3">
-              <span className="eyebrow truncate">{k.label}</span>
+              <span className="eyebrow leading-tight line-clamp-2 pr-1">{k.label}</span>
               <k.icon className="h-4 w-4 text-accent shrink-0" />
             </div>
             <p className="font-heading text-3xl sm:text-4xl leading-none">
               {k.prefix}{loading ? "—" : <Counter value={k.value} />}{k.suffix}
             </p>
             <p className="text-xs text-muted-foreground mt-2 truncate">{k.sub}</p>
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -110,7 +111,7 @@ const SenseiOverview = ({ students, onNavigate }: { students: any[]; onNavigate:
         <div className="panel p-5 min-w-0">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl">Upcoming events</h3>
-            <button onClick={() => onNavigate("calendar")} className="text-xs text-accent flex items-center gap-1">Calendar <ArrowRight className="h-3 w-3" /></button>
+            <Button variant="ghost" size="sm" onClick={() => onNavigate("calendar")} className="text-xs text-accent flex items-center gap-1">Calendar <ArrowRight className="h-3 w-3" /></Button>
           </div>
           {events.length === 0 ? <p className="text-sm text-muted-foreground">No upcoming events.</p> : (
             <ul className="space-y-3">
@@ -184,9 +185,9 @@ const SenseiOverview = ({ students, onNavigate }: { students: any[]; onNavigate:
           { l: "Plan event", i: Calendar, t: "calendar" },
           { l: "Collect fees", i: IndianRupee, t: "fees" },
         ].map((q) => (
-          <button key={q.l} onClick={() => onNavigate(q.t)} className="panel p-3 flex items-center gap-2 text-sm hover:border-accent/50 transition-colors min-h-[48px]">
+          <Button key={q.l} variant="ghost" onClick={() => onNavigate(q.t)} className="panel p-3 flex items-center justify-start gap-2 text-sm hover:border-accent/50 transition-colors min-h-[48px]">
             <q.i className="h-4 w-4 text-accent shrink-0" /> <span className="truncate">{q.l}</span>
-          </button>
+          </Button>
         ))}
       </div>
     </div>
