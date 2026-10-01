@@ -77,7 +77,7 @@ const SenseiOverview = ({ students, onNavigate }: { students: any[]; onNavigate:
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {kpis.map((k) => (
           <Button key={k.label} variant="ghost" onClick={() => onNavigate(k.tab)}
-            className="panel p-4 sm:p-5 text-left group hover:border-accent/50 transition-colors min-w-0">
+            className="panel h-auto flex-col items-stretch whitespace-normal p-4 sm:p-5 text-left group hover:border-accent/50 transition-colors min-w-0">
             <div className="flex items-center justify-between mb-3">
               <span className="eyebrow leading-tight line-clamp-2 pr-1">{k.label}</span>
               <k.icon className="h-4 w-4 text-accent shrink-0" />
