@@ -22,6 +22,7 @@ const Navbar = () => {
   const [account, setAccount] = useState<Account>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const inDashboard = location.pathname === "/dashboard";
 
   useEffect(() => {
     const resolve = async (uid?: string) => {
@@ -56,7 +57,7 @@ const Navbar = () => {
           <span className="font-heading text-lg text-gold-gradient hidden sm:block truncate">RAJA JANAK ACADEMY</span>
         </Link>
 
-        <div className="hidden xl:flex items-center gap-1">
+        <div className={`hidden xl:flex items-center gap-1 ${inDashboard ? "xl:hidden" : ""}`}>
           {navLinks.map((l) => (
             <Link key={l.to} to={l.to}
               className={`px-3 py-2 text-sm font-medium transition-colors rounded ${location.pathname === l.to ? "text-accent" : "text-muted-foreground hover:text-foreground"}`}>
@@ -66,7 +67,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {account ? (
+          {account && !inDashboard ? (
             <>
               <Link to={account.to} className="hidden sm:block">
                 <Button size="sm" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
@@ -77,13 +78,13 @@ const Navbar = () => {
                 <LogOut className="h-4 w-4 mr-1" /> Logout
               </Button>
             </>
-          ) : (
+          ) : !account ? (
             <Link to="/login" className="hidden sm:block">
               <Button size="sm" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
                 <LogIn className="h-4 w-4 mr-1" /> Login
               </Button>
             </Link>
-          )}
+          ) : null}
           <button aria-label="Menu" className="xl:hidden h-11 w-11 flex items-center justify-center rounded-md text-foreground hover:bg-secondary" onClick={() => setOpen(!open)}>
             {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -94,18 +95,18 @@ const Navbar = () => {
         <>
           <div className="xl:hidden fixed inset-0 top-16 bg-background/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="xl:hidden absolute right-0 top-16 w-full sm:w-80 max-h-[calc(100vh-4rem)] overflow-y-auto bg-background border-l border-b border-border shadow-2xl animate-fade-in">
-            {account ? (
+            {account && !inDashboard ? (
               <div className="p-4 border-b border-border grid grid-cols-2 gap-2">
                 <Link to={account.to}>
                   <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90"><AccountIcon className="h-4 w-4 mr-1" /> {account.label}</Button>
                 </Link>
                 <Button variant="outline" onClick={logout} className="w-full"><LogOut className="h-4 w-4 mr-1" /> Logout</Button>
               </div>
-            ) : (
+            ) : !account ? (
               <div className="p-4 border-b border-border">
                 <Link to="/login"><Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90"><LogIn className="h-4 w-4 mr-1" /> Login</Button></Link>
               </div>
-            )}
+            ) : null}
             {navLinks.map((l) => (
               <Link key={l.to} to={l.to}
                 className={`block px-6 py-4 text-sm font-medium border-b border-border/50 transition-colors ${location.pathname === l.to ? "text-accent bg-secondary" : "text-muted-foreground hover:text-foreground"}`}>
