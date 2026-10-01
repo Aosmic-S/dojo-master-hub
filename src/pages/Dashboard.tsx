@@ -14,13 +14,14 @@ import EventsCalendar from "@/components/EventsCalendar";
 import AdminMessagesInbox from "@/components/admin/AdminMessagesInbox";
 import AdminFees from "@/components/admin/AdminFees";
 import SenseiOverview from "@/components/admin/SenseiOverview";
+import { SenseiNavigation, type SenseiTab } from "@/components/admin/SenseiNavigation";
 
 const BELT_LEVELS = [
   "White", "Yellow", "Orange", "Green", "Blue", "Purple", "Brown 4th Kyu", "Brown 3rd Kyu",
   "Brown 2nd Kyu", "Brown 1st Kyu", "Black 1st Dan", "Black 2nd Dan", "Black 3rd Dan"
 ];
 
-type Tab = "overview" | "students" | "fees" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
+type Tab = SenseiTab;
 
 const Dashboard = () => {
   const { user, isReady } = useAuthReady();
@@ -369,20 +370,6 @@ const Dashboard = () => {
     belt: b, count: students.filter((s) => s.belt_level === b).length
   })).filter((b) => b.count > 0);
 
-  const tabs: { key: Tab; label: string; icon: any }[] = [
-    { key: "overview", label: "Overview", icon: TrendingUp },
-    { key: "students", label: "Students", icon: Users },
-    { key: "analytics", label: "Analytics", icon: Activity },
-    { key: "calendar", label: "Calendar", icon: Calendar },
-    { key: "messages", label: "Messages", icon: MessageCircle },
-    { key: "fees", label: "Fees", icon: IndianRupee },
-    { key: "achievements", label: "Achievements", icon: Award },
-    { key: "gallery", label: "Gallery", icon: Image },
-    { key: "timings", label: "Timings & Fees", icon: BarChart3 },
-    { key: "announcements", label: "Announcements", icon: Megaphone },
-    { key: "settings", label: "Settings", icon: Settings },
-  ];
-
   // Extra stats
   const blackBelts = students.filter((s) => s.belt_level.startsWith("Black")).length;
   const newThisMonth = students.filter((s) => {
@@ -394,38 +381,18 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <section className="py-6 sm:py-10">
-        <div className="container mx-auto px-4">
-          {/* Header / Welcome */}
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card-gradient p-6 sm:p-8 mb-8">
-            <div className="absolute inset-0 bg-hero-gradient opacity-40 pointer-events-none" />
-            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
-            <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.25em] text-accent font-heading mb-2">Sensei Console</p>
-                <h1 className="font-heading text-3xl sm:text-4xl font-bold leading-tight">
-                  ADMIN <span className="text-gold-gradient">DASHBOARD</span>
-                </h1>
-                <p className="text-muted-foreground text-sm mt-2">Welcome back, {user?.email?.split("@")[0]}. Manage the dojo from one place.</p>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleLogout} className="border-border text-muted-foreground self-start sm:self-auto">
-                <LogOut className="h-4 w-4 mr-1" /> Logout
-              </Button>
+      <section className="py-6 sm:py-8">
+        <div className="container mx-auto px-4 max-w-[1600px]">
+          <div className="hidden lg:flex items-end justify-between border-b border-border pb-5 mb-7">
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-accent font-semibold mb-1">Raja Janak Academy / Sensei Console</p>
+              <h1 className="font-heading text-3xl leading-none">{activeTab === "overview" ? "Dojo overview" : activeTab === "settings" ? "Account settings" : activeTab === "timings" ? "Timings & fees" : activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
             </div>
+            <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}</p>
           </div>
-
-          {/* Tabs */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2 mb-8">
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex flex-col lg:flex-row items-center justify-center gap-1 lg:gap-2 px-2 lg:px-4 py-2.5 min-h-[56px] lg:min-h-[40px] rounded-lg lg:rounded-full text-[11px] sm:text-xs lg:text-sm font-heading uppercase tracking-wide text-center leading-tight transition-all border ${activeTab === t.key
-                  ? "bg-accent text-accent-foreground border-accent gold-glow"
-                  : "bg-secondary/40 text-muted-foreground hover:text-foreground border-border hover:border-accent/50"}`}>
-                <t.icon className="h-4 w-4" /> {t.label}
-              </button>
-            ))}
-          </div>
+          <div className="lg:flex lg:gap-7 xl:gap-9 items-start min-w-0">
+            <SenseiNavigation activeTab={activeTab} onNavigate={setActiveTab} />
+            <div className="flex-1 min-w-0">
 
           {activeTab === "overview" && <SenseiOverview students={students} onNavigate={setActiveTab} />}
 
@@ -766,6 +733,9 @@ const Dashboard = () => {
                 <Input type="password" placeholder="New password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} className="bg-secondary border-border mb-2" />
                 <Button onClick={updateAdminPassword} size="sm" className="bg-primary hover:bg-crimson-dark text-primary-foreground font-heading">Update Password</Button>
               </div>
+              <div className="border-t border-border mt-8 pt-6">
+                <Button variant="outline" onClick={handleLogout} className="border-border text-muted-foreground hover:text-foreground"><LogOut className="h-4 w-4 mr-2" /> Sign out</Button>
+              </div>
             </div>
           )}
 
@@ -1019,7 +989,8 @@ const Dashboard = () => {
             <FormatModal onClose={() => setShowFormat(false)} onDone={loadData} />
           )}
 
-        </div>
+            </div>
+          </div>
       </section>
     </Layout>
   );
