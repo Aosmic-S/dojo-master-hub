@@ -22,7 +22,13 @@ const sections = [
   { label: "ACCOUNT", items: [{ key: "settings", label: "Settings", icon: Settings }] },
 ] as const;
 
-const labelFor = (tab: SenseiTab) => sections.flatMap((s) => s.items).find((item) => item.key === tab)?.label ?? "Overview";
+const labelFor = (tab: SenseiTab) => {
+  for (const section of sections) {
+    const item = section.items.find((entry) => entry.key === tab);
+    if (item) return item.label;
+  }
+  return "Overview";
+};
 
 export function SenseiNavigation({ activeTab, onNavigate }: { activeTab: SenseiTab; onNavigate: (tab: SenseiTab) => void }) {
   const [open, setOpen] = useState(false);

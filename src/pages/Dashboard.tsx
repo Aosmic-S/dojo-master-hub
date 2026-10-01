@@ -991,6 +991,7 @@ const Dashboard = () => {
 
             </div>
           </div>
+        </div>
       </section>
     </Layout>
   );
