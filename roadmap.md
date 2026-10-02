@@ -5,3 +5,7 @@
 - [x] Different home page for logged-in users
 - [x] Fees system (admin + student)
 - [x] Animated stat counters, parallax, site-wide animations
+- [ ] Calendar holidays with automatic announcements
+- [ ] Dedicated Sensei attendance marking
+- [ ] Brown 1st Kyu senior duty rota and substitution flow
+- [ ] Sensei alerts for unavailable seniors/open duties
