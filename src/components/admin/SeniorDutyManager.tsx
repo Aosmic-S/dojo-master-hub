@@ -47,6 +47,15 @@ export default function SeniorDutyManager({ students }: { students: any[] }) {
     toast.success(data ? `${data} duty dates prepared.` : "Duty dates are already up to date.");
     await load();
   };
+  const clearMonth = async () => {
+    if (!window.confirm(`Clear all scheduled duties for ${month}?`)) return;
+    const monthStart = `${month}-01`;
+    const end = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).toISOString().split("T")[0];
+    const { error } = await supabase.from("senior_duties").delete().gte("duty_date", monthStart).lte("duty_date", end);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Cleared all duties for ${month}.`);
+    await load();
+  };
 
   const open = duties.filter((duty) => duty.status === "cover_requested");
 
@@ -54,8 +63,12 @@ export default function SeniorDutyManager({ students }: { students: any[] }) {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-5">
         <div><div className="flex items-center gap-2"><CalendarClock className="h-5 w-5 text-accent" /><h2 className="font-heading text-2xl">Senior duty</h2></div><p className="text-sm text-muted-foreground mt-1">Repeating junior-batch rota for Brown 1st Kyu seniors.</p></div>
-        <div className="flex gap-2"><input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="bg-secondary border border-border rounded-md px-3 text-sm" /><Button onClick={generate}><RefreshCw className="h-4 w-4" /> Prepare month</Button></div>
-      </div>
+        <div className="flex flex-wrap gap-2">
+  <input type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="bg-secondary border border-border rounded-md px-3 text-sm" />
+  <Button onClick={generate}><RefreshCw className="h-4 w-4" /> Prepare month</Button>
+  <Button variant="outline" onClick={clearMonth} className="text-destructive border-destructive/40 hover:bg-destructive/10">Clear month</Button>
+</div>
+
 
       {!seniors.length && <div className="border border-accent/30 bg-accent/5 rounded-md p-4 text-sm">No Brown 1st Kyu students are available for the rota.</div>}
 
