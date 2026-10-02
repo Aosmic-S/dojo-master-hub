@@ -224,8 +224,6 @@ const StudentProfile = () => {
                   </div>
                 )}
               </div>
-            </div>
-          )}
 
               <div>
                 <div className="flex items-center gap-2 mb-3"><Award className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Achievements</h3></div>
