@@ -15,6 +15,13 @@
       "when": 1790752594067,
       "tag": "0001_student_photo_upload",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790903725520,
+      "tag": "0002_academy_holidays_attendance_and_senior_duty",
+      "breakpoints": true
     }
   ]
 }
