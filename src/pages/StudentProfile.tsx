@@ -227,58 +227,6 @@ const StudentProfile = () => {
             </div>
           )}
 
-          {tab === "overview" && (
-            <div className="flex flex-col gap-6">
-              {announcements.length > 0 && (
-                <div className="bg-card-gradient border border-accent/30 rounded-lg p-5">
-                  <div className="flex items-center gap-2 mb-3"><Megaphone className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Announcements</h3></div>
-                  <div className="flex flex-col gap-2">
-                    {announcements.slice(0, 3).map((a) => (
-                      <div key={a.id} className="bg-secondary rounded-lg p-3">
-                        <h4 className="font-heading text-sm font-semibold">{a.title}</h4>
-                        <p className="text-muted-foreground text-sm">{a.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                  { l: "Belt", v: null, t: student.belt_level },
-                  { l: "Attendance (30d)", v: presentDays, s: `/${dailyReports.length}` },
-                  { l: "Current streak", v: streak, s: " days" },
-                  { l: "Achievements", v: achievements.length },
-                ].map((m) => (
-                  <div key={m.l} className="panel p-4">
-                    <p className="eyebrow mb-1">{m.l}</p>
-                    <p className="font-heading text-4xl leading-none">{m.v === null ? m.t : <><Counter value={m.v as number} /><span className="text-lg text-muted-foreground">{m.s}</span></>}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="panel p-4">
-                <div className="flex justify-between mb-2"><p className="eyebrow">Attendance rate</p><p className="text-sm text-accent font-semibold">{attPct}%</p></div>
-                <Progress value={attPct} />
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 mb-3"><FileText className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Weekly Reports</h3></div>
-                {weeklyReports.length === 0 ? <p className="text-muted-foreground text-sm">No reports yet.</p> : (
-                  <div className="flex flex-col gap-2">
-                    {weeklyReports.map((r) => (
-                      <div key={r.id} className="bg-card-gradient border border-border rounded-lg p-3 flex justify-between items-center">
-                        <p className="text-xs text-accent font-heading">{r.week_start} → {r.week_end}</p>
-                        <Button size="sm" variant="outline" className="h-7 text-xs border-accent text-accent" onClick={async () => {
-                          const { data: dailies } = await supabase.from("daily_reports").select("*")
-                            .eq("student_id", student.id).gte("date", r.week_start).lte("date", r.week_end).order("date");
-                          generateWeeklyReportPDF({ student, weekStart: r.week_start, weekEnd: r.week_end, summary: r.summary || "", dailyReports: dailies || [] });
-                        }}><FileDown className="h-3 w-3 mr-1" /> PDF</Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
               <div>
                 <div className="flex items-center gap-2 mb-3"><Award className="h-5 w-5 text-accent" /><h3 className="font-heading text-lg font-semibold">Achievements</h3></div>
                 {achievements.length === 0 ? <p className="text-muted-foreground text-sm">No achievements yet.</p> : (
@@ -291,6 +239,7 @@ const StudentProfile = () => {
                     ))}
                   </div>
                 )}
+                
               </div>
             </div>
           )}
