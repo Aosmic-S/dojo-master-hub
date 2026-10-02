@@ -1,6 +1,26 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { Activity, Award, BarChart3, Calendar, ChevronRight, Image, IndianRupee, LayoutDashboard, Megaphone, Menu, MessageCircle, Settings, Users, X } from "lucide-react";
+import { 
+  Activity, Award, BarChart3, Calendar, CalendarCheck, 
+  ChevronRight, Image, IndianRupee, LayoutDashboard, 
+  Megaphone, Menu, MessageCircle, Settings, ShieldCheck, Users, X 
+} from "lucide-react";
+
+export type SenseiTab = 
+  | "overview" 
+  | "students" 
+  | "attendance" 
+  | "duty" 
+  | "fees" 
+  | "analytics" 
+  | "calendar" 
+  | "messages" 
+  | "achievements" 
+  | "gallery" 
+  | "timings" 
+  | "announcements" 
+  | "settings";
+
 import { Button } from "@/components/ui/button";
 
 export type SenseiTab = "overview" | "students" | "fees" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
@@ -8,12 +28,15 @@ export type SenseiTab = "overview" | "students" | "fees" | "analytics" | "calend
 const sections = [
   { label: "DOJO", items: [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
+    { key: "attendance", label: "Mark Attendance", icon: CalendarCheck },
+    { key: "duty", label: "Senior Duty", icon: ShieldCheck },
     { key: "students", label: "Students", icon: Users },
-    { key: "analytics", label: "Attendance", icon: Activity },
+    { key: "analytics", label: "Analytics", icon: Activity },
     { key: "calendar", label: "Calendar", icon: Calendar },
     { key: "messages", label: "Messages", icon: MessageCircle },
     { key: "fees", label: "Payments", icon: IndianRupee },
   ] },
+
   { label: "ACADEMY", items: [
     { key: "achievements", label: "Achievements", icon: Award },
     { key: "gallery", label: "Gallery", icon: Image },
