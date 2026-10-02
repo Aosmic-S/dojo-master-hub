@@ -14,6 +14,8 @@ import EventsCalendar from "@/components/EventsCalendar";
 import AdminMessagesInbox from "@/components/admin/AdminMessagesInbox";
 import AdminFees from "@/components/admin/AdminFees";
 import SenseiOverview from "@/components/admin/SenseiOverview";
+import AdminAttendance from "@/components/admin/AdminAttendance";
+import SeniorDutyManager from "@/components/admin/SeniorDutyManager";
 import { SenseiNavigation, type SenseiTab } from "@/components/admin/SenseiNavigation";
 
 const BELT_LEVELS = [
