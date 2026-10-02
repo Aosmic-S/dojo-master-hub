@@ -610,6 +610,8 @@ const Dashboard = () => {
 
           {activeTab === "messages" && <AdminMessagesInbox />}
           {activeTab === "fees" && <AdminFees students={students} />}
+          {activeTab === "attendance" && <AdminAttendance students={students} />}
+          {activeTab === "duty" && <SeniorDutyManager students={students} />}
 
           {/* ============ ACHIEVEMENTS TAB ============ */}
           {activeTab === "achievements" && (
