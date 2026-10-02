@@ -68,7 +68,7 @@ export default function SeniorDutyManager({ students }: { students: any[] }) {
   <Button onClick={generate}><RefreshCw className="h-4 w-4" /> Prepare month</Button>
   <Button variant="outline" onClick={clearMonth} className="text-destructive border-destructive/40 hover:bg-destructive/10">Clear month</Button>
 </div>
-
+      </div>
 
       {!seniors.length && <div className="border border-accent/30 bg-accent/5 rounded-md p-4 text-sm">No Brown 1st Kyu students are available for the rota.</div>}
 
