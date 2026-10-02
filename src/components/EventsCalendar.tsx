@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, ChevronRight, Plus, Trash2, MapPin, Clock, X, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, MapPin, Clock, X, CalendarDays, CalendarOff } from "lucide-react";
 import { toast } from "sonner";
 
 type AcademyEvent = {
@@ -17,6 +17,7 @@ type AcademyEvent = {
   audience: string;
   location: string | null;
   display_color: string;
+  event_type: string;
 };
 
 const COLORS: Record<string, string> = {
@@ -41,6 +42,7 @@ const EventsCalendar = ({ canManage }: { canManage: boolean }) => {
     title: "", description: "", event_date: todayStr(),
     start_time: "", end_time: "", is_all_day: true,
     audience: "all", location: "", display_color: "accent",
+    event_type: "event",
   });
 
   const monthStart = useMemo(() => new Date(cursor.getFullYear(), cursor.getMonth(), 1), [cursor]);
@@ -101,28 +103,46 @@ const EventsCalendar = ({ canManage }: { canManage: boolean }) => {
       title: "", description: "", event_date: date || todayStr(),
       start_time: "", end_time: "", is_all_day: true,
       audience: "all", location: "", display_color: "accent",
+      event_type: "event",
     });
     setShowForm(true);
   };
 
   const handleCreate = async () => {
-    if (!form.title.trim() || !form.event_date) { toast.error("Title and date are required"); return; }
+    if ((form.event_type !== "holiday" && !form.title.trim()) || !form.event_date) { toast.error("Title and date are required"); return; }
     const { data: { user } } = await supabase.auth.getUser();
+    const isHoliday = form.event_type === "holiday";
     const payload = {
-      title: form.title.trim(),
-      description: form.description.trim() || null,
+      title: isHoliday ? (form.title.trim() || "Academy Holiday") : form.title.trim(),
+      description: form.description.trim() || (isHoliday ? "The academy will remain closed on this day." : null),
       event_date: form.event_date,
       start_time: form.is_all_day ? null : (form.start_time || null),
       end_time: form.is_all_day ? null : (form.end_time || null),
       is_all_day: form.is_all_day,
       audience: form.audience,
       location: form.location.trim() || null,
-      display_color: form.display_color,
+      display_color: isHoliday ? "primary" : form.display_color,
+      event_type: form.event_type,
       created_by: user?.id ?? null,
     };
-    const { error } = await supabase.from("academy_events").insert(payload);
+    const { data: created, error } = await supabase.from("academy_events").insert(payload).select("id").single();
     if (error) { toast.error(error.message); return; }
-    toast.success("Event added!");
+    if (isHoliday && created) {
+      const formatted = new Date(`${form.event_date}T12:00:00`).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      const { error: announcementError } = await supabase.from("announcements").insert({
+        title: payload.title,
+        message: `${payload.description} Holiday date: ${formatted}.`,
+        target_batch: "all",
+        created_by: user?.id ?? null,
+        event_id: created.id,
+      });
+      if (announcementError) {
+        await supabase.from("academy_events").delete().eq("id", created.id);
+        toast.error(announcementError.message);
+        return;
+      }
+    }
+    toast.success(isHoliday ? "Holiday marked and announcement posted." : "Event added!");
     setShowForm(false);
     await loadEvents();
   };
