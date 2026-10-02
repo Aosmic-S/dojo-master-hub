@@ -1112,6 +1112,8 @@ const EditableFee = ({ fee, onSave }: { fee: any; onSave: (id: string, plan: str
 };
 
 const FORMAT_TARGETS: { key: string; label: string; table: string; description: string }[] = [
+  { key: "senior_duties", label: "Senior Duties (Generated)", table: "senior_duties", description: "All scheduled duty dates and substitute records." },
+  { key: "senior_duty_schedule", label: "Senior Duty Master Rota", table: "senior_duty_schedule", description: "The repeating 4-week senior schedule grid." },
   { key: "daily_reports", label: "Daily Reports", table: "daily_reports", description: "All daily attendance & performance entries." },
   { key: "weekly_reports", label: "Weekly Reports", table: "weekly_reports", description: "All compiled weekly reports." },
   { key: "achievements", label: "Student Achievements", table: "achievements", description: "Per-student achievements." },
