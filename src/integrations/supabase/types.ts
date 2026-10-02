@@ -50,6 +50,7 @@ export type Database = {
           display_color: string
           end_time: string | null
           event_date: string
+          event_type: string
           id: string
           is_all_day: boolean
           location: string | null
@@ -65,6 +66,7 @@ export type Database = {
           display_color?: string
           end_time?: string | null
           event_date: string
+          event_type?: string
           id?: string
           is_all_day?: boolean
           location?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           display_color?: string
           end_time?: string | null
           event_date?: string
+          event_type?: string
           id?: string
           is_all_day?: boolean
           location?: string | null
@@ -128,6 +131,7 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          event_id: string | null
           id: string
           message: string
           target_batch: string | null
@@ -136,6 +140,7 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          event_id?: string | null
           id?: string
           message: string
           target_batch?: string | null
@@ -144,12 +149,21 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          event_id?: string | null
           id?: string
           message?: string
           target_batch?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "announcements_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "academy_events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       belt_curriculum: {
         Row: {
@@ -340,6 +354,105 @@ export type Database = {
           image_url?: string
         }
         Relationships: []
+      }
+      senior_duties: {
+        Row: {
+          assigned_student_id: string
+          covering_student_id: string | null
+          created_at: string
+          duty_date: string
+          id: string
+          responded_at: string | null
+          response_note: string | null
+          schedule_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_student_id: string
+          covering_student_id?: string | null
+          created_at?: string
+          duty_date: string
+          id?: string
+          responded_at?: string | null
+          response_note?: string | null
+          schedule_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_student_id?: string
+          covering_student_id?: string | null
+          created_at?: string
+          duty_date?: string
+          id?: string
+          responded_at?: string | null
+          response_note?: string | null
+          schedule_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "senior_duties_assigned_student_id_fkey"
+            columns: ["assigned_student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "senior_duties_covering_student_id_fkey"
+            columns: ["covering_student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "senior_duties_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "senior_duty_schedule"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      senior_duty_schedule: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          day_of_week: number
+          id: string
+          student_id: string
+          updated_at: string
+          week_of_month: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          day_of_week: number
+          id?: string
+          student_id: string
+          updated_at?: string
+          week_of_month: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          day_of_week?: number
+          id?: string
+          student_id?: string
+          updated_at?: string
+          week_of_month?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "senior_duty_schedule_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       student_badges: {
         Row: {
@@ -622,6 +735,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      materialize_senior_duties: { Args: { _month?: string }; Returns: number }
       set_my_profile_photo: { Args: { _url: string }; Returns: undefined }
     }
     Enums: {
