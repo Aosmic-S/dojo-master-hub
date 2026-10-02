@@ -23,8 +23,6 @@ export type SenseiTab =
 
 import { Button } from "@/components/ui/button";
 
-export type SenseiTab = "overview" | "students" | "fees" | "analytics" | "calendar" | "messages" | "achievements" | "gallery" | "timings" | "announcements" | "settings";
-
 const sections = [
   { label: "DOJO", items: [
     { key: "overview", label: "Overview", icon: LayoutDashboard },
