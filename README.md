@@ -1,6 +1,4 @@
-# Dojo Master Hub
-
-Here's a detailed, copy-paste ready prompt for Lovable:
+# Dojo Website 
 
 
 
